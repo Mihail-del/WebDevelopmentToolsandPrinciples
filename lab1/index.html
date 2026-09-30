@@ -83,8 +83,8 @@
             <!-- Teachers Grid -->
             <div class="teachers-grid">
                 <!-- Teacher Card 1 -->
-                <div class="teacher-card">
-                    <div class=" teacher-card__avatar-wrap">
+                <div class="teacher-card" onclick="openTeacherModal()">
+                    <div class="teacher-card__avatar-wrap">
                         <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop&q=80"
                             alt="Ihor Tkachuk" class="teacher-card__avatar">
                     </div>
@@ -370,7 +370,7 @@
         <div class="modal modal--form">
             <div class="modal__header">
                 <h3 class="modal__title">Add Teacher</h3>
-                <button type="button" class="modal__close">x</button>
+                <button type="button" class="modal__close" onclick="closeModals()">x</button>
             </div>
             <form class="modal__body form">
                 <div class="form__group">
@@ -450,7 +450,7 @@
         <div class="modal modal--info">
             <div class="modal__header">
                 <h3 class="modal__title">Teacher Info</h3>
-                <button type="button" class="modal__close">x</button>
+                <button type="button" class="modal__close" onclick="closeModals()">x</button>
             </div>
             <div class="modal__body info-card clearfix">
                 <!-- FLOAT -->
@@ -483,6 +483,30 @@
             </div>
         </div>
     </div>
+
+    <!-- for testing only -->
+    <script>
+        const addTeacherModal = document.getElementById('addTeacherModal');
+        const teacherInfoModal = document.getElementById('teacherInfoModal');
+
+        document.getElementById('openAddTeacherBtn').onclick = () => addTeacherModal.classList.add('is-active');
+        document.getElementById('openAddTeacherFooterBtn').onclick = () => addTeacherModal.classList.add('is-active');
+
+        function openTeacherModal() {
+            teacherInfoModal.classList.add('is-active');
+        }
+
+        function closeModals() {
+            addTeacherModal.classList.remove('is-active');
+            teacherInfoModal.classList.remove('is-active');
+        }
+
+        window.onclick = function (e) {
+            if (e.target === addTeacherModal || e.target === teacherInfoModal) {
+                closeModals();
+            }
+        }
+    </script>
 </body>
 
 </html>
