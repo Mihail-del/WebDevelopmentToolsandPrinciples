@@ -236,11 +236,13 @@ let allUsers = formatAndMergeUsers(randomUserMock, additionalUsers);
 let displayedUsers = [...allUsers];
 const ROWS_PER_PAGE = 10;
 let currentPage = 1;
+let visibleTeachers = 10;
 let sortField = "";
 let sortOrder = "asc";
 
 // DOM Selectors
 const teachersGrid = document.getElementById("teachersGrid");
+const showMoreTeachers = document.getElementById("showMoreTeachers");
 const statsTableBody = document.getElementById("statsTableBody");
 const favoritesContainer = document.getElementById("favoritesTrack");
 const favoritesPrev = document.getElementById("favoritesPrev");
@@ -304,7 +306,8 @@ window.addEventListener("resize", updateCarouselButtons);
 function renderTeachersGrid() {
     if (!teachersGrid) return;
     teachersGrid.innerHTML = "";
-    const topTeachers = displayedUsers.slice(0, 10);
+    const topTeachers = displayedUsers.slice(0, visibleTeachers);
+    showMoreTeachers.hidden = visibleTeachers >= displayedUsers.length;
 
     if (!topTeachers.length) {
         teachersGrid.innerHTML = '<p class="empty-message">No teachers found.</p>';
@@ -319,7 +322,7 @@ function renderTeachersGrid() {
 
         let avatarHTML;
         if (user.picture_large || user.picture_thumbnail) {
-            const src = user.picture_thumbnail || user.picture_large;
+            const src = user.picture_large || user.picture_thumbnail;
             avatarHTML = `
                 <div class="teacher-card__avatar-wrap">
                     ${user.favorite ? '<span class="teacher-card__star">★</span>' : ""}
@@ -348,6 +351,11 @@ function renderTeachersGrid() {
     });
 }
 
+showMoreTeachers.addEventListener("click", () => {
+    visibleTeachers += 10;
+    renderTeachersGrid();
+});
+
 // Show favorite teachers.
 function renderFavorites() {
     if (!favoritesContainer) return;
@@ -369,7 +377,7 @@ function renderFavorites() {
 
         let avatarHTML;
         if (user.picture_large || user.picture_thumbnail) {
-            const src = user.picture_thumbnail || user.picture_large;
+            const src = user.picture_large || user.picture_thumbnail;
             avatarHTML = `
                 <div class="teacher-card__avatar-wrap">
                     <span class="teacher-card__star">★</span>
@@ -449,7 +457,7 @@ function renderPagination(totalPages) {
 }
 
 // Apply Filters to the Displayed List
-function applyFilters() {
+function applyFilters(resetVisible = true) {
     const filters = {};
     if (filterSex && filterSex.value !== "all") filters.gender = filterSex.value;
     if (filterFavorite?.checked) filters.favorite = true;
@@ -485,6 +493,7 @@ function applyFilters() {
     if (sortField) filtered = sortUsers(filtered, sortField, sortOrder);
 
     displayedUsers = filtered;
+    if (resetVisible !== false) visibleTeachers = 10;
     currentPage = 1;
     renderTeachersGrid();
     renderStatsTable();
@@ -502,6 +511,7 @@ document.querySelectorAll(".stats-table th[data-sort]").forEach((header) => {
         sortField = field;
         document.querySelectorAll(".stats-table th[data-sort]").forEach((item) => {
             const active = item === header;
+            item.classList.toggle("is-sorted", active);
             item.setAttribute("aria-sort", active ? (sortOrder === "asc" ? "ascending" : "descending") : "none");
             item.querySelector(".sort-arrow").textContent = active ? (sortOrder === "asc" ? "↑" : "↓") : "";
         });
@@ -555,7 +565,7 @@ function openTeacherInfo(user) {
         favBtn.setAttribute("aria-pressed", String(user.favorite));
 
         // Update the cards.
-        applyFilters();
+        applyFilters(false);
         renderFavorites();
     });
 
