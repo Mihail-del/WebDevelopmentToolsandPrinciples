@@ -234,6 +234,7 @@ let currentPage = 1;
 
 const teachersGrid = document.getElementById("teachersGrid");
 const statsTableBody = document.getElementById("statsTableBody");
+const favoritesContainer = document.getElementById("favoritesTrack") || document.querySelector(".favorites-grid");
 const teacherInfoBody = document.getElementById("teacherInfoBody");
 const addTeacherModal = document.getElementById("addTeacherModal");
 const teacherInfoModal = document.getElementById("teacherInfoModal");
@@ -295,6 +296,51 @@ function renderTeachersGrid() {
 
         card.addEventListener("click", () => openTeacherInfo(user));
         teachersGrid.appendChild(card);
+    });
+}
+
+function renderFavorites() {
+    if (!favoritesContainer) return;
+    favoritesContainer.innerHTML = "";
+
+    const favorites = allUsers.filter((u) => u.favorite);
+
+    if (favorites.length === 0) {
+        favoritesContainer.innerHTML = '<p style="color: #999; font-size: 14px; text-align: center; width: 100%;">No favorite teachers yet.</p>';
+        return;
+    }
+
+    favorites.forEach((user) => {
+        const card = document.createElement("div");
+        card.className = "teacher-card";
+
+        const { first, last } = splitName(user.full_name);
+
+        let avatarHTML;
+        if (user.picture_large || user.picture_thumbnail) {
+            const src = user.picture_thumbnail || user.picture_large;
+            avatarHTML = `
+                <div class="teacher-card__avatar-wrap">
+                    <span class="teacher-card__star">★</span>
+                    <img src="${src}" alt="${user.full_name}" class="teacher-card__avatar">
+                </div>`;
+        } else {
+            avatarHTML = `
+                <div class="teacher-card__avatar-wrap teacher-card__avatar-wrap--text">
+                    <span class="teacher-card__star">★</span>
+                    <span>${getInitials(user.full_name)}</span>
+                </div>`;
+        }
+
+        card.innerHTML = `
+            ${avatarHTML}
+            <h3 class="teacher-card__name">${first}<br>${last}</h3>
+            <p class="teacher-card__subject">${user.course || ""}</p>
+            <p class="teacher-card__country">${user.country || ""}</p>
+        `;
+
+        card.addEventListener("click", () => openTeacherInfo(user));
+        favoritesContainer.appendChild(card);
     });
 }
 
@@ -385,7 +431,11 @@ function openTeacherInfo(user) {
     favBtn?.addEventListener("click", () => {
         user.favorite = !user.favorite;
         favBtn.textContent = user.favorite ? "★" : "☆";
+        favBtn.style.color = user.favorite ? "#f7ca18" : "#ccc";
+
+        // Синхронизируем карточки в обеих секциях
         renderTeachersGrid();
+        renderFavorites();
     });
 
     teacherInfoModal.classList.add("is-active");
@@ -487,6 +537,7 @@ document.querySelector(".modal--form .form")?.addEventListener("submit", (e) => 
 
     renderTeachersGrid();
     renderStatsTable();
+    renderFavorites();
     closeModals();
     form.reset();
 });
@@ -494,3 +545,4 @@ document.querySelector(".modal--form .form")?.addEventListener("submit", (e) => 
 // Initial load
 renderTeachersGrid();
 renderStatsTable();
+renderFavorites();
