@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teachinder - Find Your Teacher</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container main-layout">
+        <!-- Header -->
+        <header class="header">
+            <div class="header__top">
+                <a href="#" class="logo">Teachinder</a>
+                <form class="search-form" action="#" method="get">
+                    <input type="text" class="search-form__input" placeholder="Name, note or age to search">
+                    <button type="submit" class="btn btn--outline">Search</button>
+                </form>
+            </div>
+
+            <div class="header__nav-bar">
+                <nav class="nav">
+                    <ul class="nav__list">
+                        <li class="nav__item"><a href="#teachers" class="nav__link">Teachers</a></li>
+                        <li class="nav__item"><a href="#statistics" class="nav__link">Statistics</a></li>
+                        <li class="nav__item"><a href="#favorites" class="nav__link">Favorites</a></li>
+                        <li class="nav__item"><a href="#about" class="nav__link">About</a></li>
+                    </ul>
+                </nav>
+                <button type="button" class="btn btn--outline" id="openAddTeacherBtn">Add teacher</button>
+            </div>
+        </header>
+
+        <hr class="divider">
+
+        <!-- Top Teachers -->
+        <section class="section" id="teachers">
+
+        </section>
+
+        <hr class="divider">
+
+        <!-- Statistics -->
+        <section class="section" id="statistics">
+            <h2 class="section__title">Statistics</h2>
+
+            <div class="table-responsive">
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Speciality</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Nationality</th>
+                        </tr>
+                    </thead>
+                    <tbody id="statsTableBody">
+                        <!-- Dynamically populated by script.js -->
+                    </tbody>
+                </table>
+            </div>
+
+            <nav class="pagination">
+                <!-- Dynamically populated by script.js -->
+            </nav>
+        </section>
+
+        <hr class="divider">
+
+        <!-- Favorites (Static List / Grid) -->
+        <section class="section" id="favorites">
+
+        </section>
+
+        <hr class="divider">
+
+        <!-- About / Info text -->
+        <section class="section about-text" id="about">
+            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. A atque facere, hic impedit itaque molestiae
+                sit tempore? Ea in mollitia natus rerum voluptates. Ea ex excepturi facere tempora. Aliquid asperiores
+                hic impedit iusto natus quaerat ratione sit? Culpa iusto optio voluptas voluptate. Enim eveniet fugit
+                iure maiores molestiae, praesentium quia.</p>
+            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam eligendi illum in inventore ipsum odio
+                officiis omnis quisquam sed tempora?</p>
+            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. A atque esse expedita id iusto mollitia, odit
+                sint ullam veritatis vero?</p>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <nav class="nav">
+                <ul class="nav__list">
+                    <li class="nav__item"><a href="#teachers" class="nav__link">Teachers</a></li>
+                    <li class="nav__item"><a href="#statistics" class="nav__link">Statistics</a></li>
+                    <li class="nav__item"><a href="#favorites" class="nav__link">Favorites</a></li>
+                    <li class="nav__item"><a href="#about" class="nav__link">About</a></li>
+                </ul>
+            </nav>
+            <button type="button" class="btn btn--outline" id="openAddTeacherFooterBtn">Add teacher</button>
+        </footer>
+    </div>
+
+    <!-- ================= POPUP 1: ADD TEACHER ================= -->
+    <div class="modal-overlay" id="addTeacherModal">
+        <div class="modal modal--form">
+            <div class="modal__header">
+                <h3 class="modal__title">Add Teacher</h3>
+                <button type="button" class="modal__close" id="closeAddTeacherModalBtn">&times;</button>
+            </div>
+            <form class="modal__body form">
+                <div class="form__group">
+                    <label class="form__label">Name</label>
+                    <input type="text" name="name" class="form__input" placeholder="Enter name" required>
+                </div>
+
+                <div class="form__group">
+                    <label class="form__label">Speciality</label>
+                    <select name="course" class="form__select">
+                        <option>Mathematics</option>
+                        <option>Chemistry</option>
+                        <option>Physics</option>
+                        <option>Computer Science</option>
+                        <option>Biology</option>
+                        <option>Dancing</option>
+                        <option>Chess</option>
+                        <option>English</option>
+                        <option>Law</option>
+                        <option>Art</option>
+                        <option>Medicine</option>
+                        <option>Statistics</option>
+                    </select>
+                </div>
+
+                <div class="form__row">
+                    <div class="form__group form__col">
+                        <label class="form__label">Country</label>
+                        <select name="country" class="form__select">
+                            <option>Ukraine</option>
+                            <option>United States</option>
+                            <option>Germany</option>
+                            <option>France</option>
+                            <option>Norway</option>
+                            <option>Finland</option>
+                            <option>Denmark</option>
+                            <option>Ireland</option>
+                            <option>Spain</option>
+                        </select>
+                    </div>
+                    <div class="form__group form__col">
+                        <label class="form__label">City</label>
+                        <input type="text" name="city" class="form__input">
+                    </div>
+                </div>
+
+                <div class="form__row">
+                    <div class="form__group form__col">
+                        <label class="form__label">Email</label>
+                        <input type="email" name="email" class="form__input" required>
+                    </div>
+                    <div class="form__group form__col">
+                        <label class="form__label">Phone</label>
+                        <input type="tel" name="phone" class="form__input" required>
+                    </div>
+                </div>
+
+                <div class="form__group">
+                    <label class="form__label">Date of birth</label>
+                    <input type="date" name="b_date" class="form__input form__input--date" required>
+                </div>
+
+                <div class="form__group form__radio-row">
+                    <span class="form__label" style="margin-bottom: 0;">Sex</span>
+                    <label class="form__radio-label">
+                        <input type="radio" name="sex" value="male" checked> Male
+                    </label>
+                    <label class="form__radio-label">
+                        <input type="radio" name="sex" value="female"> Female
+                    </label>
+                </div>
+
+                <div class="form__group form__color-row">
+                    <label class="form__label" style="margin-bottom: 0;">Background color</label>
+                    <input type="color" name="bg_color" class="form__color-input" value="#ffffff">
+                </div>
+
+                <div class="form__group">
+                    <label class="form__label">Notes (optional)</label>
+                    <textarea name="note" class="form__textarea" rows="4"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn--primary form__submit-btn">Add</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= POPUP 2: TEACHER INFO ================= -->
+    <div class="modal-overlay" id="teacherInfoModal">
+        <div class="modal modal--info">
+            <div class="modal__header">
+                <h3 class="modal__title">Teacher Info</h3>
+                <button type="button" class="modal__close" id="closeTeacherInfoModalBtn">&times;</button>
+            </div>
+            <div class="modal__body info-card clearfix" id="teacherInfoBody">
+                <!-- Dynamically populated by script.js -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+
+</html>
