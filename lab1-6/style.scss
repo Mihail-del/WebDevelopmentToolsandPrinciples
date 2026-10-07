@@ -1,4 +1,4 @@
-// ==================== VARIABLES ====================
+// Variables.
 $primary-color: #f75c48;
 $primary-dark: #e04a37;
 $text-dark: #333333;
@@ -8,7 +8,7 @@ $dark-modal-header: #444444;
 $font-family: 'Helvetica Neue', Arial, sans-serif;
 $max-width: 1040px;
 
-// ==================== BASE & RESET ====================
+// Base & reset.
 * {
     box-sizing: border-box;
     margin: 0;
@@ -36,7 +36,7 @@ body {
     margin: 35px 0;
 }
 
-// ==================== BUTTONS ====================
+// Buttons.
 .btn {
     display: inline-flex;
     align-items: center;
@@ -72,7 +72,7 @@ body {
     }
 }
 
-// ==================== HEADER (FLEXBOX) ====================
+// Header.
 .header {
     display: flex;
     flex-direction: column;
@@ -138,7 +138,7 @@ body {
     }
 }
 
-// ==================== FILTERS (FLEXBOX) ====================
+// Filters.
 .filters {
     display: flex;
     align-items: center;
@@ -177,7 +177,7 @@ body {
     }
 }
 
-// ==================== SECTION TITLE ====================
+// Section title.
 .section {
     &__title {
         text-align: center;
@@ -187,7 +187,7 @@ body {
     }
 }
 
-// ==================== TEACHERS GRID (CSS GRID) ====================
+// Teachers grid.
 .teachers-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -265,7 +265,7 @@ body {
     }
 }
 
-// ==================== STATISTICS TABLE ====================
+// Statistics table.
 .table-responsive {
     width: 100%;
     overflow-x: auto;
@@ -287,6 +287,14 @@ body {
         font-weight: 600;
         color: $text-dark;
         border-bottom: 1px solid #444;
+
+        button {
+            border: 0;
+            background: none;
+            color: inherit;
+            font: inherit;
+            cursor: pointer;
+        }
 
         &.is-sorted {
             border-bottom: 2px solid #000;
@@ -328,7 +336,7 @@ body {
     }
 }
 
-// ==================== FAVORITES CAROUSEL (FLEXBOX) ====================
+// Favorites carousel.
 .carousel {
     display: flex;
     align-items: center;
@@ -338,11 +346,23 @@ body {
 
     &__track {
         display: flex;
-        justify-content: space-around;
+        gap: 20px;
         flex: 1;
-        overflow: hidden;
-        padding: 10px 4px;
-        margin: -10px -4px;
+        min-width: 0;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scroll-behavior: smooth;
+        scrollbar-width: none;
+        padding: 12px 4px;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+
+        .teacher-card {
+            flex: 0 0 140px;
+            scroll-snap-align: start;
+        }
     }
 
     &__btn {
@@ -358,10 +378,28 @@ body {
         &:hover {
             color: $primary-color;
         }
+
+        &:disabled {
+            color: $border-color;
+            cursor: default;
+        }
     }
 }
 
-// ==================== ABOUT TEXT ====================
+.empty-message {
+    width: 100%;
+    text-align: center;
+    color: $text-muted;
+    font-size: 14px;
+    grid-column: 1 / -1;
+}
+
+.form__error {
+    color: $primary-dark;
+    font-size: 13px;
+}
+
+// About text.
 .about-text {
     font-size: 13px;
     color: $text-muted;
@@ -372,7 +410,7 @@ body {
     }
 }
 
-// ==================== FOOTER ====================
+// Footer.
 .footer {
     display: flex;
     justify-content: space-between;
@@ -380,7 +418,7 @@ body {
     padding-top: 25px;
 }
 
-// ==================== MODALS ====================
+// Modals.
 .modal-overlay {
     position: fixed;
     inset: 0;
@@ -436,7 +474,7 @@ body {
     }
 }
 
-// ==================== MODAL 1: FORM ====================
+// Modal 1: form.
 .form {
     display: flex;
     flex-direction: column;
@@ -511,8 +549,8 @@ body {
     }
 }
 
-// ==================== MODAL 2: INFO (FLOAT IMPLEMENTATION) ====================
-// Lab requirement: float at least once
+// Modal 2: info.
+// Place the photo next to the text.
 .clearfix::after {
     content: "";
     clear: both;
@@ -599,7 +637,7 @@ body {
     }
 }
 
-// ==================== media < 768px ====================
+// Media < 768px.
 @media (max-width: 767px) {
     .container {
         padding: 15px 12px;
@@ -652,9 +690,12 @@ body {
         gap: 20px 10px;
     }
 
-    .carousel__track {
-        flex-wrap: wrap;
-        gap: 15px;
+    .carousel {
+        gap: 4px;
+
+        &__btn {
+            padding: 0 4px;
+        }
     }
 
     .footer {
@@ -663,14 +704,26 @@ body {
         text-align: center;
     }
 
-    // Teacher info popup reset float on mobile
+    // Place the photo above the text on mobile.
     .info-card {
         &__photo-box {
             float: none;
             width: 100%;
             max-width: 250px;
-            height: auto;
+            height: 250px;
             margin: 0 auto 15px;
         }
+    }
+}
+
+@media (min-width: 768px) and (max-width: 950px) {
+    .teachers-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .carousel__track {
+        scroll-behavior: auto;
     }
 }

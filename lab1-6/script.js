@@ -20,9 +20,20 @@ const getRandomCourse = () => {
     return COURSES[randomIndex];
 };
 
-// ============================================================================
-// TASK 1: Format and Merge User Objects
-// ============================================================================
+function getAge(birthDate) {
+    if (!birthDate) return null;
+    const birth = new Date(birthDate);
+    if (Number.isNaN(birth.getTime())) return null;
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    if (today.getMonth() < birth.getMonth() ||
+        (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) {
+        age--;
+    }
+    return age;
+}
+
+// Merge users.
 export function formatAndMergeUsers(rawUsers, extraUsers) {
     const formattedRawUsers = rawUsers.map((user) => {
         return {
@@ -65,14 +76,14 @@ export function formatAndMergeUsers(rawUsers, extraUsers) {
             timezone: user.timezone || null,
             email: user.email || null,
             b_date: user.b_day || user.b_date || null,
-            age: user.age ?? (user.b_day ? Math.floor((Date.now() - new Date(user.b_day).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : null),
+            age: user.age ?? getAge(user.b_day || user.b_date),
             phone: user.phone || null,
             picture_large: user.picture_large || null,
             picture_thumbnail: user.picture_thumbnail || null,
 
             id: user.id || `user-${Math.random()}`,
             favorite: user.favorite ?? false,
-            course: user.course || getRandomCourse(),
+            course: COURSES.find((course) => course.toLowerCase() === user.course?.toLowerCase()) || getRandomCourse(),
             bg_color: user.bg_color || "#ffffff",
             note: user.note || null,
         };
@@ -81,7 +92,7 @@ export function formatAndMergeUsers(rawUsers, extraUsers) {
     const userMap = new Map();
 
     [...formattedRawUsers, ...normalizedExtraUsers].forEach((user) => {
-        const key = user.full_name.toLowerCase().trim() || user.email?.toLowerCase().trim();
+        const key = user.full_name.toLowerCase().trim() || user.email?.toLowerCase().trim() || user.id;
 
         if (!userMap.has(key)) {
             userMap.set(key, { ...user });
@@ -96,6 +107,8 @@ export function formatAndMergeUsers(rawUsers, extraUsers) {
                 phone: user.phone || existing.phone,
                 b_date: user.b_date || existing.b_date,
                 age: user.age ?? existing.age,
+                picture_large: user.picture_large || existing.picture_large,
+                picture_thumbnail: user.picture_thumbnail || existing.picture_thumbnail,
                 note: user.note || existing.note,
                 favorite: existing.favorite || user.favorite,
                 course: existing.course || user.course,
@@ -107,34 +120,39 @@ export function formatAndMergeUsers(rawUsers, extraUsers) {
     return Array.from(userMap.values());
 }
 
-// ============================================================================
-// TASK 2: Validate User Object
-// ============================================================================
+// Check user fields.
 export function validateUser(user) {
     if (!user || typeof user !== "object") return false;
 
     const isCapitalizedString = (val) =>
-        typeof val === "string" && val.length > 0 && /^[A-ZА-ЯЁІЇЄ]/.test(val.trim());
+        typeof val === "string" && /^\p{Lu}/u.test(val.trim());
 
-    if (!isCapitalizedString(user.full_name)) return false;
-    if (!isCapitalizedString(user.gender)) return false;
-    if (user.note && !isCapitalizedString(user.note)) return false;
-    if (user.state && !isCapitalizedString(user.state)) return false;
-    if (user.city && !isCapitalizedString(user.city)) return false;
-    if (user.country && !isCapitalizedString(user.country)) return false;
+    const textFields = ["full_name", "gender", "note", "state", "city", "country"];
+    if (!textFields.every((field) => isCapitalizedString(user[field]))) return false;
+    if (typeof user.age !== "number" || !Number.isFinite(user.age) || user.age < 0) return false;
+    if (typeof user.email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) return false;
+    if (typeof user.phone !== "string" || !/^\+?[\d\s()-]+$/.test(user.phone)) return false;
 
-    if (typeof user.age !== "number" || isNaN(user.age) || user.age <= 0) return false;
-
-    if (typeof user.email !== "string" || !user.email.includes("@")) return false;
-
-    if (typeof user.phone !== "string" || user.phone.trim().length === 0) return false;
+    const phone = user.phone.replace(/[\s()-]/g, "");
+    const phoneFormats = {
+        Ukraine: /^(?:\+380\d{9}|0\d{9})$/,
+        "United States": /^(?:\+?1)?\d{10}$/,
+        Canada: /^(?:\+?1)?\d{10}$/,
+        Germany: /^(?:\+49\d{7,13}|0\d{7,13})$/,
+        France: /^(?:\+33\d{9}|0\d{9})$/,
+        Norway: /^(?:\+47)?\d{8}$/,
+        Finland: /^(?:\+358\d{5,12}|0\d{5,12})$/,
+        Denmark: /^(?:\+45)?\d{8}$/,
+        Ireland: /^(?:\+353\d{7,9}|0\d{7,9})$/,
+        Spain: /^(?:\+34)?\d{9}$/,
+    };
+    const phoneFormat = phoneFormats[user.country] || /^\+?\d{7,15}$/;
+    if (!phoneFormat.test(phone)) return false;
 
     return true;
 }
 
-// ============================================================================
-// TASK 3: Filter Users by Multiple Parameters (Logical AND)
-// ============================================================================
+// Filter users.
 export function filterUsers(users, filters = {}) {
     return users.filter((user) => {
         if (filters.country && user.country?.toLowerCase() !== filters.country.toLowerCase()) {
@@ -153,15 +171,14 @@ export function filterUsers(users, filters = {}) {
     });
 }
 
-// ============================================================================
-// TASK 4: Sort Users by a Given Parameter (asc / desc)
-// ============================================================================
+// Sort users.
 export function sortUsers(users, sortBy, order = "asc") {
     const multiplier = order.toLowerCase() === "desc" ? -1 : 1;
 
     return [...users].sort((a, b) => {
-        let valA = a[sortBy] ?? a[sortBy === "b_date" ? "b_day" : sortBy];
-        let valB = b[sortBy] ?? b[sortBy === "b_date" ? "b_day" : sortBy];
+        const field = sortBy === "b_day" ? "b_date" : sortBy;
+        const valA = a[field] ?? (field === "b_date" ? a.b_day : null);
+        const valB = b[field] ?? (field === "b_date" ? b.b_day : null);
 
         if (valA === valB) return 0;
         if (valA === null || valA === undefined) return 1;
@@ -179,13 +196,12 @@ export function sortUsers(users, sortBy, order = "asc") {
     });
 }
 
-// ============================================================================
-// TASK 5: Find User by Search Query
-// ============================================================================
+// Find a user.
 export function findUser(users, query) {
     if (query === undefined || query === null) return null;
 
     const normalizedQuery = String(query).trim().toLowerCase();
+    if (!normalizedQuery) return null;
 
     return (
         users.find((user) => {
@@ -198,9 +214,7 @@ export function findUser(users, query) {
     );
 }
 
-// ============================================================================
-// TASK 6: Calculate Percentage Matching Condition
-// ============================================================================
+// Count matching users.
 export function getPercentageByCondition(users, predicate) {
     if (!Array.isArray(users) || users.length === 0) return 0;
 
@@ -208,39 +222,42 @@ export function getPercentageByCondition(users, predicate) {
 
     if (typeof predicate === "function") {
         matchingCount = users.filter(predicate).length;
-    } else {
-        const q = String(predicate).toLowerCase();
-        matchingCount = users.filter((u) => {
-            return (
-                String(u.age) === q ||
-                u.full_name?.toLowerCase().includes(q) ||
-                u.note?.toLowerCase().includes(q)
-            );
-        }).length;
+    } else if (predicate !== undefined && predicate !== null) {
+        matchingCount = users.filter((user) => findUser([user], predicate)).length;
     }
 
     const percentage = (matchingCount / users.length) * 100;
     return Number(percentage.toFixed(2));
 }
 
-// ============================================================================
-// DOM RENDERING & APP LOGIC
-// ============================================================================
+// Page content.
 
 let allUsers = formatAndMergeUsers(randomUserMock, additionalUsers);
 let displayedUsers = [...allUsers];
 const ROWS_PER_PAGE = 10;
 let currentPage = 1;
+let sortField = "";
+let sortOrder = "asc";
 
+// DOM Selectors
 const teachersGrid = document.getElementById("teachersGrid");
 const statsTableBody = document.getElementById("statsTableBody");
-const favoritesContainer = document.getElementById("favoritesTrack") || document.querySelector(".favorites-grid");
+const favoritesContainer = document.getElementById("favoritesTrack");
+const favoritesPrev = document.getElementById("favoritesPrev");
+const favoritesNext = document.getElementById("favoritesNext");
 const teacherInfoBody = document.getElementById("teacherInfoBody");
 const addTeacherModal = document.getElementById("addTeacherModal");
 const teacherInfoModal = document.getElementById("teacherInfoModal");
 const searchInput = document.querySelector(".search-form__input");
 const searchForm = document.querySelector(".search-form");
 const paginationNav = document.querySelector(".pagination");
+
+// Filter Selectors
+const filterAge = document.getElementById("filter-age");
+const filterRegion = document.getElementById("filter-region");
+const filterSex = document.getElementById("filter-sex");
+const filterPhoto = document.getElementById("filter-photo") || document.querySelector(".filters__checkbox-label:nth-child(1) .filters__checkbox");
+const filterFavorite = document.getElementById("filter-favorite") || document.querySelector(".filters__checkbox-label:nth-child(2) .filters__checkbox");
 
 function getInitials(fullName) {
     const parts = fullName.trim().split(/\s+/);
@@ -259,10 +276,39 @@ function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (character) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+    })[character]);
+}
+
+function updateCarouselButtons() {
+    if (!favoritesContainer) return;
+    favoritesPrev.disabled = favoritesContainer.scrollLeft <= 1;
+    favoritesNext.disabled = favoritesContainer.scrollLeft + favoritesContainer.clientWidth >= favoritesContainer.scrollWidth - 1;
+}
+
+function scrollFavorites(direction) {
+    const card = favoritesContainer.querySelector(".teacher-card");
+    if (!card) return;
+    const step = card.offsetWidth + parseFloat(getComputedStyle(favoritesContainer).gap);
+    favoritesContainer.scrollBy({ left: direction * step });
+}
+
+favoritesPrev?.addEventListener("click", () => scrollFavorites(-1));
+favoritesNext?.addEventListener("click", () => scrollFavorites(1));
+favoritesContainer?.addEventListener("scroll", updateCarouselButtons);
+window.addEventListener("resize", updateCarouselButtons);
+
+// Render Top Teachers Grid
 function renderTeachersGrid() {
     if (!teachersGrid) return;
     teachersGrid.innerHTML = "";
     const topTeachers = displayedUsers.slice(0, 10);
+
+    if (!topTeachers.length) {
+        teachersGrid.innerHTML = '<p class="empty-message">No teachers found.</p>';
+    }
 
     topTeachers.forEach((user, idx) => {
         const card = document.createElement("div");
@@ -277,28 +323,32 @@ function renderTeachersGrid() {
             avatarHTML = `
                 <div class="teacher-card__avatar-wrap">
                     ${user.favorite ? '<span class="teacher-card__star">★</span>' : ""}
-                    <img src="${src}" alt="${user.full_name}" class="teacher-card__avatar">
+                    <img src="${src}" alt="${escapeHTML(user.full_name)}" class="teacher-card__avatar">
                 </div>`;
         } else {
             avatarHTML = `
                 <div class="teacher-card__avatar-wrap teacher-card__avatar-wrap--text">
                     ${user.favorite ? '<span class="teacher-card__star">★</span>' : ""}
-                    <span>${getInitials(user.full_name)}</span>
+                    <span>${escapeHTML(getInitials(user.full_name))}</span>
                 </div>`;
         }
 
         card.innerHTML = `
             ${avatarHTML}
-            <h3 class="teacher-card__name">${first}<br>${last}</h3>
-            <p class="teacher-card__subject">${user.course || ""}</p>
-            <p class="teacher-card__country">${user.country || ""}</p>
+            <h3 class="teacher-card__name">${escapeHTML(first)}<br>${escapeHTML(last)}</h3>
+            <p class="teacher-card__subject">${escapeHTML(user.course)}</p>
+            <p class="teacher-card__country">${escapeHTML(user.country)}</p>
         `;
+        if (/^#[0-9a-f]{6}$/i.test(user.bg_color)) {
+            card.querySelector(".teacher-card__avatar-wrap").style.backgroundColor = user.bg_color;
+        }
 
         card.addEventListener("click", () => openTeacherInfo(user));
         teachersGrid.appendChild(card);
     });
 }
 
+// Show favorite teachers.
 function renderFavorites() {
     if (!favoritesContainer) return;
     favoritesContainer.innerHTML = "";
@@ -306,7 +356,8 @@ function renderFavorites() {
     const favorites = allUsers.filter((u) => u.favorite);
 
     if (favorites.length === 0) {
-        favoritesContainer.innerHTML = '<p style="color: #999; font-size: 14px; text-align: center; width: 100%;">No favorite teachers yet.</p>';
+        favoritesContainer.innerHTML = '<p class="empty-message">No favorite teachers yet.</p>';
+        updateCarouselButtons();
         return;
     }
 
@@ -322,28 +373,30 @@ function renderFavorites() {
             avatarHTML = `
                 <div class="teacher-card__avatar-wrap">
                     <span class="teacher-card__star">★</span>
-                    <img src="${src}" alt="${user.full_name}" class="teacher-card__avatar">
+                    <img src="${src}" alt="${escapeHTML(user.full_name)}" class="teacher-card__avatar">
                 </div>`;
         } else {
             avatarHTML = `
                 <div class="teacher-card__avatar-wrap teacher-card__avatar-wrap--text">
                     <span class="teacher-card__star">★</span>
-                    <span>${getInitials(user.full_name)}</span>
+                    <span>${escapeHTML(getInitials(user.full_name))}</span>
                 </div>`;
         }
 
         card.innerHTML = `
             ${avatarHTML}
-            <h3 class="teacher-card__name">${first}<br>${last}</h3>
-            <p class="teacher-card__subject">${user.course || ""}</p>
-            <p class="teacher-card__country">${user.country || ""}</p>
+            <h3 class="teacher-card__name">${escapeHTML(first)}<br>${escapeHTML(last)}</h3>
+            <p class="teacher-card__subject">${escapeHTML(user.course)}</p>
+            <p class="teacher-card__country">${escapeHTML(user.country)}</p>
         `;
 
         card.addEventListener("click", () => openTeacherInfo(user));
         favoritesContainer.appendChild(card);
     });
+    updateCarouselButtons();
 }
 
+// Render Statistics Table
 function renderStatsTable() {
     if (!statsTableBody) return;
     statsTableBody.innerHTML = "";
@@ -352,15 +405,19 @@ function renderStatsTable() {
     if (currentPage > totalPages) currentPage = totalPages;
     const start = (currentPage - 1) * ROWS_PER_PAGE;
     const pageUsers = displayedUsers.slice(start, start + ROWS_PER_PAGE);
+    if (!pageUsers.length) {
+        statsTableBody.innerHTML = '<tr><td colspan="5">No teachers found.</td></tr>';
+    }
+    document.getElementById("statsSummary").textContent = `${displayedUsers.length} teachers (${getPercentageByCondition(allUsers, (user) => displayedUsers.includes(user))}% of all teachers)`;
 
     pageUsers.forEach((user) => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-            <td>${user.full_name}</td>
-            <td>${user.course || "—"}</td>
+            <td>${escapeHTML(user.full_name)}</td>
+            <td>${escapeHTML(user.course || "—")}</td>
             <td>${user.age ?? "—"}</td>
-            <td>${user.gender || "—"}</td>
-            <td>${user.country || "—"}</td>
+            <td>${escapeHTML(user.gender || "—")}</td>
+            <td>${escapeHTML(user.country || "—")}</td>
         `;
         tr.style.cursor = "pointer";
         tr.addEventListener("click", () => openTeacherInfo(user));
@@ -370,6 +427,7 @@ function renderStatsTable() {
     renderPagination(totalPages);
 }
 
+// Render Pagination Links
 function renderPagination(totalPages) {
     if (!paginationNav) return;
     paginationNav.innerHTML = "";
@@ -390,6 +448,68 @@ function renderPagination(totalPages) {
     }
 }
 
+// Apply Filters to the Displayed List
+function applyFilters() {
+    const filters = {};
+    if (filterSex && filterSex.value !== "all") filters.gender = filterSex.value;
+    if (filterFavorite?.checked) filters.favorite = true;
+    let filtered = filterUsers(allUsers, filters);
+
+    // Filter by Age
+    if (filterAge) {
+        const ageVal = filterAge.value;
+        if (ageVal === "18-31") filtered = filtered.filter((u) => u.age >= 18 && u.age <= 31);
+        else if (ageVal === "32-45") filtered = filtered.filter((u) => u.age >= 32 && u.age <= 45);
+        else if (ageVal === "46+") filtered = filtered.filter((u) => u.age >= 46);
+    }
+
+    // Filter by Region
+    if (filterRegion) {
+        const regionVal = filterRegion.value;
+        const europeanCountries = ["germany", "ireland", "finland", "turkey", "switzerland", "norway", "spain", "denmark", "france", "netherlands", "uk", "ukraine"];
+        const asianCountries = ["iran", "india", "china", "japan"];
+        const americanCountries = ["united states", "canada", "brazil", "usa"];
+
+        if (regionVal === "Europe") filtered = filtered.filter((u) => europeanCountries.includes(u.country?.toLowerCase()));
+        else if (regionVal === "Asia") filtered = filtered.filter((u) => asianCountries.includes(u.country?.toLowerCase()));
+        else if (regionVal === "Americas") filtered = filtered.filter((u) => americanCountries.includes(u.country?.toLowerCase()));
+    }
+
+    // Filter by Photo availability
+    if (filterPhoto && filterPhoto.checked) {
+        filtered = filtered.filter((u) => u.picture_large || u.picture_thumbnail);
+    }
+
+    const query = searchInput?.value.trim();
+    if (query) filtered = filtered.filter((user) => findUser([user], query));
+    if (sortField) filtered = sortUsers(filtered, sortField, sortOrder);
+
+    displayedUsers = filtered;
+    currentPage = 1;
+    renderTeachersGrid();
+    renderStatsTable();
+}
+
+// Event Listeners for Filter Inputs
+[filterAge, filterRegion, filterSex].forEach((el) => el?.addEventListener("change", applyFilters));
+filterPhoto?.addEventListener("change", applyFilters);
+filterFavorite?.addEventListener("change", applyFilters);
+
+document.querySelectorAll(".stats-table th[data-sort]").forEach((header) => {
+    header.querySelector("button").addEventListener("click", () => {
+        const field = header.dataset.sort;
+        sortOrder = sortField === field && sortOrder === "asc" ? "desc" : "asc";
+        sortField = field;
+        document.querySelectorAll(".stats-table th[data-sort]").forEach((item) => {
+            const active = item === header;
+            item.setAttribute("aria-sort", active ? (sortOrder === "asc" ? "ascending" : "descending") : "none");
+            item.querySelector(".sort-arrow").textContent = active ? (sortOrder === "asc" ? "↑" : "↓") : "";
+        });
+        applyFilters();
+    });
+});
+
+// Open Teacher Details Modal
 function openTeacherInfo(user) {
     if (!teacherInfoBody || !teacherInfoModal) return;
 
@@ -397,13 +517,13 @@ function openTeacherInfo(user) {
     if (user.picture_large) {
         photoHTML = `
             <div class="info-card__photo-box">
-                <img src="${user.picture_large}" alt="${user.full_name}" class="info-card__img">
+                <img src="${user.picture_large}" alt="${escapeHTML(user.full_name)}" class="info-card__img">
             </div>`;
     } else {
         photoHTML = `
             <div class="info-card__photo-box" style="display:flex;align-items:center;justify-content:center;
                 background:#f0f0f0;font-size:48px;font-weight:700;color:#f75c48;">
-                ${getInitials(user.full_name)}
+                ${escapeHTML(getInitials(user.full_name))}
             </div>`;
     }
 
@@ -411,19 +531,19 @@ function openTeacherInfo(user) {
         ${photoHTML}
         <div class="info-card__header">
             <div class="info-card__name-row">
-                <h2 class="info-card__name">${user.full_name}</h2>
-                <button class="info-card__star-btn" aria-label="Favorite" id="toggleFavBtn">
+                <h2 class="info-card__name">${escapeHTML(user.full_name)}</h2>
+                <button class="info-card__star-btn" aria-label="Favorite" aria-pressed="${user.favorite}" id="toggleFavBtn" style="color: ${user.favorite ? '#f7ca18' : '#ccc'}">
                     ${user.favorite ? "★" : "☆"}
                 </button>
             </div>
-            <h4 class="info-card__subject">${user.course || ""}</h4>
-            <p class="info-card__meta">${[user.city, user.country].filter(Boolean).join(", ") || "—"}</p>
-            <p class="info-card__meta">${user.age ?? "—"}, ${user.gender || "—"}</p>
-            ${user.email ? `<p class="info-card__meta"><a href="mailto:${user.email}" class="info-card__link">${user.email}</a></p>` : ""}
-            ${user.phone ? `<p class="info-card__meta">${user.phone}</p>` : ""}
+            <h4 class="info-card__subject">${escapeHTML(user.course)}</h4>
+            <p class="info-card__meta">${escapeHTML([user.city, user.country].filter(Boolean).join(", ") || "—")}</p>
+            <p class="info-card__meta">${user.age ?? "—"}, ${escapeHTML(user.gender || "—")}</p>
+            ${user.email ? `<p class="info-card__meta"><a href="mailto:${escapeHTML(user.email)}" class="info-card__link">${escapeHTML(user.email)}</a></p>` : ""}
+            ${user.phone ? `<p class="info-card__meta">${escapeHTML(user.phone)}</p>` : ""}
         </div>
         <div class="info-card__desc">
-            ${user.note ? `<p>${user.note}</p>` : "<p>No additional notes.</p>"}
+            ${user.note ? `<p>${escapeHTML(user.note)}</p>` : "<p>No additional notes.</p>"}
         </div>
     `;
 
@@ -432,9 +552,10 @@ function openTeacherInfo(user) {
         user.favorite = !user.favorite;
         favBtn.textContent = user.favorite ? "★" : "☆";
         favBtn.style.color = user.favorite ? "#f7ca18" : "#ccc";
+        favBtn.setAttribute("aria-pressed", String(user.favorite));
 
-        // Синхронизируем карточки в обеих секциях
-        renderTeachersGrid();
+        // Update the cards.
+        applyFilters();
         renderFavorites();
     });
 
@@ -454,38 +575,23 @@ document.getElementById("closeTeacherInfoModalBtn")?.addEventListener("click", c
 window.addEventListener("click", (e) => {
     if (e.target === addTeacherModal || e.target === teacherInfoModal) closeModals();
 });
+window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeModals();
+});
 
-// Search
+// Search Form Handling
 searchForm?.addEventListener("submit", (e) => {
     e.preventDefault();
-    const query = searchInput?.value.trim();
-    if (!query) {
-        displayedUsers = [...allUsers];
-    } else {
-        displayedUsers = allUsers.filter((user) => {
-            const q = query.toLowerCase();
-            return (
-                user.full_name?.toLowerCase().includes(q) ||
-                user.note?.toLowerCase().includes(q) ||
-                String(user.age) === q
-            );
-        });
-    }
-    currentPage = 1;
-    renderTeachersGrid();
-    renderStatsTable();
+    applyFilters();
 });
 
 searchInput?.addEventListener("input", () => {
     if (searchInput.value.trim() === "") {
-        displayedUsers = [...allUsers];
-        currentPage = 1;
-        renderTeachersGrid();
-        renderStatsTable();
+        applyFilters();
     }
 });
 
-// Add Teacher Form
+// Add Teacher Form Submission
 document.querySelector(".modal--form .form")?.addEventListener("submit", (e) => {
     e.preventDefault();
     const form = e.target;
@@ -494,6 +600,7 @@ document.querySelector(".modal--form .form")?.addEventListener("submit", (e) => 
     const specialitySelect = form.querySelectorAll(".form__select")[0];
     const countrySelect = form.querySelectorAll(".form__select")[1];
     const cityInput = form.querySelectorAll('.form__row input[type="text"]')[0];
+    const stateInput = form.elements.state;
     const emailInput = form.querySelector('input[type="email"]');
     const phoneInput = form.querySelector('input[type="tel"]');
     const dobInput = form.querySelector('input[type="date"]');
@@ -502,18 +609,14 @@ document.querySelector(".modal--form .form")?.addEventListener("submit", (e) => 
     const textarea = form.querySelector(".form__textarea");
 
     const birthDate = dobInput?.value || null;
-    let computedAge = null;
-    if (birthDate) {
-        const diff = Date.now() - new Date(birthDate).getTime();
-        computedAge = Math.floor(diff / (365.25 * 24 * 60 * 60 * 1000));
-    }
+    const computedAge = getAge(birthDate);
 
     const newUser = {
         gender: sexRadio?.value ? capitalize(sexRadio.value) : "Male",
         title: sexRadio?.value === "male" ? "Mr" : "Ms",
         full_name: nameInput?.value.trim() || "",
         city: cityInput?.value.trim() || null,
-        state: null,
+        state: stateInput.value.trim(),
         country: countrySelect?.value || null,
         postcode: null,
         coordinates: null,
@@ -528,21 +631,23 @@ document.querySelector(".modal--form .form")?.addEventListener("submit", (e) => 
         favorite: false,
         course: specialitySelect?.value || getRandomCourse(),
         bg_color: colorInput?.value || "#ffffff",
-        note: textarea?.value.trim() || null,
+        note: textarea?.value.trim() || "No additional notes.",
     };
 
+    const error = document.getElementById("addTeacherError");
+    if (!validateUser(newUser)) {
+        error.textContent = "Start name, state, city and notes with a capital letter. Check the email, birth date and phone format for the selected country.";
+        return;
+    }
+    error.textContent = "";
     allUsers.push(newUser);
-    displayedUsers = [...allUsers];
-    currentPage = 1;
-
-    renderTeachersGrid();
-    renderStatsTable();
+    applyFilters();
     renderFavorites();
     closeModals();
     form.reset();
 });
 
-// Initial load
+// Initial Render
 renderTeachersGrid();
 renderStatsTable();
 renderFavorites();

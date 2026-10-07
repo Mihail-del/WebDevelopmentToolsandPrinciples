@@ -244,6 +244,13 @@ body {
   color: #333333;
   border-bottom: 1px solid #444;
 }
+.stats-table th button {
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
 .stats-table th.is-sorted {
   border-bottom: 2px solid #000;
   cursor: pointer;
@@ -285,11 +292,21 @@ body {
 }
 .carousel__track {
   display: flex;
-  justify-content: space-around;
+  gap: 20px;
   flex: 1;
-  overflow: hidden;
-  padding: 10px 4px;
-  margin: -10px -4px;
+  min-width: 0;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  padding: 12px 4px;
+}
+.carousel__track::-webkit-scrollbar {
+  display: none;
+}
+.carousel__track .teacher-card {
+  flex: 0 0 140px;
+  scroll-snap-align: start;
 }
 .carousel__btn {
   background: none;
@@ -303,6 +320,23 @@ body {
 }
 .carousel__btn:hover {
   color: #f75c48;
+}
+.carousel__btn:disabled {
+  color: #dddddd;
+  cursor: default;
+}
+
+.empty-message {
+  width: 100%;
+  text-align: center;
+  color: #777777;
+  font-size: 14px;
+  grid-column: 1/-1;
+}
+
+.form__error {
+  color: #e04a37;
+  font-size: 13px;
 }
 
 .about-text {
@@ -541,9 +575,11 @@ body {
     grid-template-columns: repeat(2, 1fr);
     gap: 20px 10px;
   }
-  .carousel__track {
-    flex-wrap: wrap;
-    gap: 15px;
+  .carousel {
+    gap: 4px;
+  }
+  .carousel__btn {
+    padding: 0 4px;
   }
   .footer {
     flex-direction: column;
@@ -554,8 +590,18 @@ body {
     float: none;
     width: 100%;
     max-width: 250px;
-    height: auto;
+    height: 250px;
     margin: 0 auto 15px;
+  }
+}
+@media (min-width: 768px) and (max-width: 950px) {
+  .teachers-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .carousel__track {
+    scroll-behavior: auto;
   }
 }
 

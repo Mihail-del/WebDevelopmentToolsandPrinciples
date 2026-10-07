@@ -38,7 +38,55 @@
 
         <!-- Top Teachers -->
         <section class="section" id="teachers">
+            <h2 class="section__title">Top Teachers</h2>
 
+            <!-- Filters -->
+            <form class="filters">
+                <div class="filters__group">
+                    <label class="filters__label" for="filter-age">Age</label>
+                    <select id="filter-age" class="filters__select">
+                        <option value="all">All</option>
+                        <option value="18-31">18-31</option>
+                        <option value="32-45">32-45</option>
+                        <option value="46+">46+</option>
+                    </select>
+                </div>
+
+                <div class="filters__group">
+                    <label class="filters__label" for="filter-region">Region</label>
+                    <select id="filter-region" class="filters__select">
+                        <option value="all">All</option>
+                        <option value="Europe">Europe</option>
+                        <option value="Asia">Asia</option>
+                        <option value="Americas">Americas</option>
+                    </select>
+                </div>
+
+                <div class="filters__group">
+                    <label class="filters__label" for="filter-sex">Sex</label>
+                    <select id="filter-sex" class="filters__select">
+                        <option value="all">All</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
+
+                <div class="filters__checkbox-group">
+                    <label class="filters__checkbox-label">
+                        <input type="checkbox" class="filters__checkbox" id="filter-photo">
+                        Only with photo
+                    </label>
+                    <label class="filters__checkbox-label">
+                        <input type="checkbox" class="filters__checkbox" id="filter-favorite">
+                        Only favorites
+                    </label>
+                </div>
+            </form>
+
+            <!-- Teachers Grid -->
+            <div class="teachers-grid" id="teachersGrid">
+                <!-- Dynamically populated by script.js -->
+            </div>
         </section>
 
         <hr class="divider">
@@ -46,16 +94,17 @@
         <!-- Statistics -->
         <section class="section" id="statistics">
             <h2 class="section__title">Statistics</h2>
+            <p class="empty-message" id="statsSummary"></p>
 
             <div class="table-responsive">
                 <table class="stats-table">
                     <thead>
                         <tr>
-                            <th>Name</th>
-                            <th>Speciality</th>
-                            <th>Age</th>
-                            <th>Gender</th>
-                            <th>Nationality</th>
+                            <th data-sort="full_name" aria-sort="none"><button type="button">Name <span class="sort-arrow"></span></button></th>
+                            <th data-sort="course" aria-sort="none"><button type="button">Speciality <span class="sort-arrow"></span></button></th>
+                            <th data-sort="age" aria-sort="none"><button type="button">Age <span class="sort-arrow"></span></button></th>
+                            <th data-sort="gender" aria-sort="none"><button type="button">Gender <span class="sort-arrow"></span></button></th>
+                            <th data-sort="country" aria-sort="none"><button type="button">Nationality <span class="sort-arrow"></span></button></th>
                         </tr>
                     </thead>
                     <tbody id="statsTableBody">
@@ -71,11 +120,15 @@
 
         <hr class="divider">
 
-        <!-- Favorites (Static List / Grid) -->
+        <!-- Favorites -->
         <section class="section" id="favorites">
             <h2 class="section__title">Favorites</h2>
-            <div class="favorites-grid" id="favoritesTrack">
-                <!-- Dynamically populated by script.js -->
+            <div class="carousel">
+                <button type="button" class="carousel__btn" id="favoritesPrev" aria-label="Previous favorites" aria-controls="favoritesTrack">&lsaquo;</button>
+                <div class="carousel__track" id="favoritesTrack" tabindex="0" aria-label="Favorite teachers">
+                    <!-- Dynamically populated by script.js -->
+                </div>
+                <button type="button" class="carousel__btn" id="favoritesNext" aria-label="Next favorites" aria-controls="favoritesTrack">&rsaquo;</button>
             </div>
         </section>
 
@@ -107,7 +160,7 @@
         </footer>
     </div>
 
-    <!-- ================= POPUP 1: ADD TEACHER ================= -->
+    <!-- Add teacher popup -->
     <div class="modal-overlay" id="addTeacherModal">
         <div class="modal modal--form">
             <div class="modal__header">
@@ -155,8 +208,13 @@
                     </div>
                     <div class="form__group form__col">
                         <label class="form__label">City</label>
-                        <input type="text" name="city" class="form__input">
+                        <input type="text" name="city" class="form__input" required>
                     </div>
+                </div>
+
+                <div class="form__group">
+                    <label class="form__label" for="teacher-state">State</label>
+                    <input type="text" id="teacher-state" name="state" class="form__input" required>
                 </div>
 
                 <div class="form__row">
@@ -166,7 +224,7 @@
                     </div>
                     <div class="form__group form__col">
                         <label class="form__label">Phone</label>
-                        <input type="tel" name="phone" class="form__input" required>
+                        <input type="tel" name="phone" class="form__input" placeholder="For Ukraine: +380501234567" required>
                     </div>
                 </div>
 
@@ -195,12 +253,13 @@
                     <textarea name="note" class="form__textarea" rows="4"></textarea>
                 </div>
 
+                <p class="form__error" id="addTeacherError" role="alert"></p>
                 <button type="submit" class="btn btn--primary form__submit-btn">Add</button>
             </form>
         </div>
     </div>
 
-    <!-- ================= POPUP 2: TEACHER INFO ================= -->
+    <!-- Teacher info popup -->
     <div class="modal-overlay" id="teacherInfoModal">
         <div class="modal modal--info">
             <div class="modal__header">
