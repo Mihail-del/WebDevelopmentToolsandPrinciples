@@ -33,7 +33,7 @@ function getAge(birthDate) {
     return age;
 }
 
-// Merge users.
+// Merge users
 export function formatAndMergeUsers(rawUsers, extraUsers) {
     const formattedRawUsers = rawUsers.map((user) => {
         return {
@@ -120,7 +120,7 @@ export function formatAndMergeUsers(rawUsers, extraUsers) {
     return Array.from(userMap.values());
 }
 
-// Check user fields.
+// Check user fields
 export function validateUser(user) {
     if (!user || typeof user !== "object") return false;
 
@@ -152,7 +152,7 @@ export function validateUser(user) {
     return true;
 }
 
-// Filter users.
+// Filter users
 export function filterUsers(users, filters = {}) {
     return users.filter((user) => {
         if (filters.country && user.country?.toLowerCase() !== filters.country.toLowerCase()) {
@@ -171,7 +171,7 @@ export function filterUsers(users, filters = {}) {
     });
 }
 
-// Sort users.
+// Sort users
 export function sortUsers(users, sortBy, order = "asc") {
     const multiplier = order.toLowerCase() === "desc" ? -1 : 1;
 
@@ -196,7 +196,7 @@ export function sortUsers(users, sortBy, order = "asc") {
     });
 }
 
-// Find a user.
+// Find a user
 export function findUser(users, query) {
     if (query === undefined || query === null) return null;
 
@@ -214,7 +214,7 @@ export function findUser(users, query) {
     );
 }
 
-// Count matching users.
+// Count matching users
 export function getPercentageByCondition(users, predicate) {
     if (!Array.isArray(users) || users.length === 0) return 0;
 
@@ -230,7 +230,7 @@ export function getPercentageByCondition(users, predicate) {
     return Number(percentage.toFixed(2));
 }
 
-// Page content.
+// Page content
 
 let allUsers = formatAndMergeUsers(randomUserMock, additionalUsers);
 let displayedUsers = [...allUsers];
@@ -356,7 +356,7 @@ showMoreTeachers.addEventListener("click", () => {
     renderTeachersGrid();
 });
 
-// Show favorite teachers.
+// Show favorite teachers
 function renderFavorites() {
     if (!favoritesContainer) return;
     favoritesContainer.innerHTML = "";
