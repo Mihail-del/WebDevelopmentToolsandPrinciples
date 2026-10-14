@@ -406,7 +406,7 @@ function renderStatsTable() {
     const start = (currentPage - 1) * ROWS_PER_PAGE;
     const pageUsers = displayedUsers.slice(start, start + ROWS_PER_PAGE);
     if (!pageUsers.length) {
-        statsTableBody.innerHTML = '<tr><td colspan="5">No teachers found.</td></tr>';
+        statsTableBody.innerHTML = '<tr><td colspan="6">No teachers found.</td></tr>';
     }
     document.getElementById("statsSummary").textContent = `${displayedUsers.length} teachers (${getPercentageByCondition(allUsers, (user) => displayedUsers.includes(user))}% of all teachers)`;
 
@@ -416,6 +416,7 @@ function renderStatsTable() {
             <td>${escapeHTML(user.full_name)}</td>
             <td>${escapeHTML(user.course || "—")}</td>
             <td>${user.age ?? "—"}</td>
+            <td>${escapeHTML(user.b_date?.slice(0, 10) || "—")}</td>
             <td>${escapeHTML(user.gender || "—")}</td>
             <td>${escapeHTML(user.country || "—")}</td>
         `;
