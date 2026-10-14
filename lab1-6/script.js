@@ -297,8 +297,6 @@ function scrollFavorites(direction) {
     favoritesContainer.scrollBy({ left: direction * step });
 }
 
-favoritesPrev?.addEventListener("click", () => scrollFavorites(-1));
-favoritesNext?.addEventListener("click", () => scrollFavorites(1));
 favoritesContainer?.addEventListener("scroll", updateCarouselButtons);
 window.addEventListener("resize", updateCarouselButtons);
 
@@ -313,10 +311,10 @@ function renderTeachersGrid() {
         teachersGrid.innerHTML = '<p class="empty-message">No teachers found.</p>';
     }
 
-    topTeachers.forEach((user, idx) => {
+    topTeachers.forEach((user) => {
         const card = document.createElement("div");
         card.className = "teacher-card";
-        card.setAttribute("data-user-index", idx);
+        card.dataset.userIndex = allUsers.indexOf(user);
 
         const { first, last } = splitName(user.full_name);
 
@@ -346,15 +344,9 @@ function renderTeachersGrid() {
             card.querySelector(".teacher-card__avatar-wrap").style.backgroundColor = user.bg_color;
         }
 
-        card.addEventListener("click", () => openTeacherInfo(user));
         teachersGrid.appendChild(card);
     });
 }
-
-showMoreTeachers.addEventListener("click", () => {
-    visibleTeachers += 10;
-    renderTeachersGrid();
-});
 
 // Show favorite teachers
 function renderFavorites() {
@@ -372,6 +364,7 @@ function renderFavorites() {
     favorites.forEach((user) => {
         const card = document.createElement("div");
         card.className = "teacher-card";
+        card.dataset.userIndex = allUsers.indexOf(user);
 
         const { first, last } = splitName(user.full_name);
 
@@ -398,7 +391,6 @@ function renderFavorites() {
             <p class="teacher-card__country">${escapeHTML(user.country)}</p>
         `;
 
-        card.addEventListener("click", () => openTeacherInfo(user));
         favoritesContainer.appendChild(card);
     });
     updateCarouselButtons();
@@ -428,7 +420,7 @@ function renderStatsTable() {
             <td>${escapeHTML(user.country || "—")}</td>
         `;
         tr.style.cursor = "pointer";
-        tr.addEventListener("click", () => openTeacherInfo(user));
+        tr.dataset.userIndex = allUsers.indexOf(user);
         statsTableBody.appendChild(tr);
     });
 
@@ -447,11 +439,7 @@ function renderPagination(totalPages) {
         a.className = "pagination__link";
         a.textContent = String(i);
         if (i === currentPage) a.style.fontWeight = "bold";
-        a.addEventListener("click", (e) => {
-            e.preventDefault();
-            currentPage = i;
-            renderStatsTable();
-        });
+        a.dataset.page = i;
         paginationNav.appendChild(a);
     }
 }
@@ -499,13 +487,59 @@ function applyFilters(resetVisible = true) {
     renderStatsTable();
 }
 
-// Event Listeners for Filter Inputs
-[filterAge, filterRegion, filterSex].forEach((el) => el?.addEventListener("change", applyFilters));
-filterPhoto?.addEventListener("change", applyFilters);
-filterFavorite?.addEventListener("change", applyFilters);
+// Handle all filter changes.
+document.querySelector(".filters").addEventListener("change", () => applyFilters());
 
-document.querySelectorAll(".stats-table th[data-sort]").forEach((header) => {
-    header.querySelector("button").addEventListener("click", () => {
+// Handle clicks in one place.
+document.addEventListener("click", (e) => {
+    const target = e.target;
+
+    if (target.closest("#openAddTeacherBtn, #openAddTeacherFooterBtn")) {
+        addTeacherModal.classList.add("is-active");
+        return;
+    }
+    if (target.closest(".modal__close") || target === addTeacherModal || target === teacherInfoModal) {
+        closeModals();
+        return;
+    }
+
+    const favBtn = target.closest("#toggleFavBtn");
+    if (favBtn) {
+        const user = allUsers[Number(teacherInfoBody.dataset.userIndex)];
+        user.favorite = !user.favorite;
+        favBtn.textContent = user.favorite ? "★" : "☆";
+        favBtn.style.color = user.favorite ? "#f7ca18" : "#ccc";
+        favBtn.setAttribute("aria-pressed", String(user.favorite));
+        applyFilters(false);
+        renderFavorites();
+        return;
+    }
+
+    const teacher = target.closest(".teacher-card[data-user-index], tr[data-user-index]");
+    if (teacher) {
+        openTeacherInfo(allUsers[Number(teacher.dataset.userIndex)]);
+        return;
+    }
+    if (target.closest("#showMoreTeachers")) {
+        visibleTeachers += 10;
+        renderTeachersGrid();
+        return;
+    }
+    if (target.closest("#favoritesPrev, #favoritesNext")) {
+        scrollFavorites(target.closest("#favoritesPrev") ? -1 : 1);
+        return;
+    }
+
+    const pageLink = target.closest(".pagination__link");
+    if (pageLink) {
+        e.preventDefault();
+        currentPage = Number(pageLink.dataset.page);
+        renderStatsTable();
+        return;
+    }
+
+    const header = target.closest(".stats-table th[data-sort]");
+    if (header) {
         const field = header.dataset.sort;
         sortOrder = sortField === field && sortOrder === "asc" ? "desc" : "asc";
         sortField = field;
@@ -516,7 +550,7 @@ document.querySelectorAll(".stats-table th[data-sort]").forEach((header) => {
             item.querySelector(".sort-arrow").textContent = active ? (sortOrder === "asc" ? "↑" : "↓") : "";
         });
         applyFilters();
-    });
+    }
 });
 
 // Open Teacher Details Modal
@@ -557,18 +591,7 @@ function openTeacherInfo(user) {
         </div>
     `;
 
-    const favBtn = document.getElementById("toggleFavBtn");
-    favBtn?.addEventListener("click", () => {
-        user.favorite = !user.favorite;
-        favBtn.textContent = user.favorite ? "★" : "☆";
-        favBtn.style.color = user.favorite ? "#f7ca18" : "#ccc";
-        favBtn.setAttribute("aria-pressed", String(user.favorite));
-
-        // Update the cards.
-        applyFilters(false);
-        renderFavorites();
-    });
-
+    teacherInfoBody.dataset.userIndex = allUsers.indexOf(user);
     teacherInfoModal.classList.add("is-active");
 }
 
@@ -577,14 +600,6 @@ function closeModals() {
     teacherInfoModal?.classList.remove("is-active");
 }
 
-document.getElementById("openAddTeacherBtn")?.addEventListener("click", () => addTeacherModal?.classList.add("is-active"));
-document.getElementById("openAddTeacherFooterBtn")?.addEventListener("click", () => addTeacherModal?.classList.add("is-active"));
-document.getElementById("closeAddTeacherModalBtn")?.addEventListener("click", closeModals);
-document.getElementById("closeTeacherInfoModalBtn")?.addEventListener("click", closeModals);
-
-window.addEventListener("click", (e) => {
-    if (e.target === addTeacherModal || e.target === teacherInfoModal) closeModals();
-});
 window.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeModals();
 });
