@@ -120,20 +120,27 @@ export function formatAndMergeUsers(rawUsers, extraUsers) {
     return Array.from(userMap.values());
 }
 
-// Check user fields
-export function validateUser(user) {
-    if (!user || typeof user !== "object") return false;
-
-    const isCapitalizedString = (val) =>
-        typeof val === "string" && /^\p{Lu}/u.test(val.trim());
-
+// Get errors for each field.
+function getUserErrors(user) {
+    const errors = {};
     const textFields = ["full_name", "gender", "note", "state", "city", "country"];
-    if (!textFields.every((field) => isCapitalizedString(user[field]))) return false;
-    if (typeof user.age !== "number" || !Number.isFinite(user.age) || user.age < 0) return false;
-    if (typeof user.email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) return false;
-    if (typeof user.phone !== "string" || !/^\+?[\d\s()-]+$/.test(user.phone)) return false;
 
-    const phone = user.phone.replace(/[\s()-]/g, "");
+    textFields.forEach((field) => {
+        const value = user[field];
+        if (typeof value !== "string" || !value.trim()) {
+            errors[field] = "This field is required.";
+        } else if (!/^\p{Lu}/u.test(value.trim())) {
+            errors[field] = "Start with a capital letter.";
+        }
+    });
+
+    if (typeof user.age !== "number" || !Number.isFinite(user.age) || user.age < 0) {
+        errors.age = "Enter a valid birth date that is not in the future.";
+    }
+    if (typeof user.email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) {
+        errors.email = "Enter a valid email, for example name@example.com.";
+    }
+
     const phoneFormats = {
         Ukraine: /^(?:\+380\d{9}|0\d{9})$/,
         "United States": /^(?:\+?1)?\d{10}$/,
@@ -147,9 +154,17 @@ export function validateUser(user) {
         Spain: /^(?:\+34)?\d{9}$/,
     };
     const phoneFormat = phoneFormats[user.country] || /^\+?\d{7,15}$/;
-    if (!phoneFormat.test(phone)) return false;
+    const phone = typeof user.phone === "string" ? user.phone.replace(/[\s()-]/g, "") : "";
+    if (typeof user.phone !== "string" || !/^\+?[\d\s()-]+$/.test(user.phone) || !phoneFormat.test(phone)) {
+        errors.phone = `Enter a valid phone number for ${user.country || "the selected country"}.`;
+    }
 
-    return true;
+    return errors;
+}
+
+// Check user fields.
+export function validateUser(user) {
+    return !!user && typeof user === "object" && Object.keys(getUserErrors(user)).length === 0;
 }
 
 // Filter users
@@ -622,61 +637,87 @@ searchInput?.addEventListener("input", () => {
     }
 });
 
-// Add Teacher Form Submission
-document.querySelector(".modal--form .form")?.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const form = e.target;
+const addTeacherForm = document.querySelector(".modal--form .form");
+const teacherFields = {
+    full_name: "name",
+    country: "country",
+    city: "city",
+    state: "state",
+    email: "email",
+    phone: "phone",
+    age: "b_date",
+    note: "note",
+};
+let teacherFormSubmitted = false;
 
-    const nameInput = form.querySelector('input[placeholder="Enter name"]');
-    const specialitySelect = form.querySelectorAll(".form__select")[0];
-    const countrySelect = form.querySelectorAll(".form__select")[1];
-    const cityInput = form.querySelectorAll('.form__row input[type="text"]')[0];
-    const stateInput = form.elements.state;
-    const emailInput = form.querySelector('input[type="email"]');
-    const phoneInput = form.querySelector('input[type="tel"]');
-    const dobInput = form.querySelector('input[type="date"]');
-    const sexRadio = form.querySelector('input[name="sex"]:checked');
-    const colorInput = form.querySelector(".form__color-input");
-    const textarea = form.querySelector(".form__textarea");
+// Read the form values.
+function readTeacherForm() {
+    const fields = addTeacherForm.elements;
+    const gender = capitalize(fields.sex.value);
 
-    const birthDate = dobInput?.value || null;
-    const computedAge = getAge(birthDate);
-
-    const newUser = {
-        gender: sexRadio?.value ? capitalize(sexRadio.value) : "Male",
-        title: sexRadio?.value === "male" ? "Mr" : "Ms",
-        full_name: nameInput?.value.trim() || "",
-        city: cityInput?.value.trim() || null,
-        state: stateInput.value.trim(),
-        country: countrySelect?.value || null,
+    return {
+        gender,
+        title: gender === "Male" ? "Mr" : "Ms",
+        full_name: fields.name.value.trim(),
+        city: fields.city.value.trim(),
+        state: fields.state.value.trim(),
+        country: fields.country.value,
         postcode: null,
         coordinates: null,
         timezone: null,
-        email: emailInput?.value.trim() || null,
-        b_date: birthDate,
-        age: computedAge,
-        phone: phoneInput?.value.trim() || null,
+        email: fields.email.value.trim(),
+        b_date: fields.b_date.value || null,
+        age: getAge(fields.b_date.value),
+        phone: fields.phone.value.trim(),
         picture_large: null,
         picture_thumbnail: null,
         id: `user-${Date.now()}`,
         favorite: false,
-        course: specialitySelect?.value || getRandomCourse(),
-        bg_color: colorInput?.value || "#ffffff",
-        note: textarea?.value.trim() || "No additional notes.",
+        course: fields.course.value,
+        bg_color: fields.bg_color.value,
+        note: fields.note.value.trim() || "No additional notes.",
     };
+}
 
-    const error = document.getElementById("addTeacherError");
-    if (!validateUser(newUser)) {
-        error.textContent = "Start name, state, city and notes with a capital letter. Check the email, birth date and phone format for the selected country.";
+// Show errors below the fields.
+function showTeacherErrors(errors) {
+    Object.entries(teacherFields).forEach(([key, name]) => {
+        const field = addTeacherForm.elements[name];
+        const error = document.getElementById(`${field.id}-error`);
+        const message = errors[key] || "";
+        field.setAttribute("aria-invalid", String(!!message));
+        error.textContent = message;
+        error.hidden = !message;
+    });
+}
+
+// Check the fields again after editing.
+addTeacherForm.addEventListener("input", () => {
+    if (teacherFormSubmitted) {
+        showTeacherErrors(getUserErrors(readTeacherForm()));
+    }
+});
+
+// Add the teacher if all fields are valid.
+addTeacherForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    teacherFormSubmitted = true;
+    const newUser = readTeacherForm();
+    const errors = getUserErrors(newUser);
+    showTeacherErrors(errors);
+
+    if (Object.keys(errors).length) {
+        addTeacherForm.querySelector('[aria-invalid="true"]').focus();
         return;
     }
-    error.textContent = "";
+
     allUsers.push(newUser);
     renderCountryFilter();
     applyFilters();
     renderFavorites();
     closeModals();
-    form.reset();
+    addTeacherForm.reset();
+    teacherFormSubmitted = false;
 });
 
 // Initial Render

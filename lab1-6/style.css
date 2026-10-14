@@ -353,9 +353,9 @@ body {
   grid-column: 1/-1;
 }
 
-.form__error {
-  color: #e04a37;
-  font-size: 13px;
+.form__field-error {
+  color: #c0392b;
+  font-size: 12px;
 }
 
 .about-text {
@@ -447,6 +447,10 @@ body {
 }
 .form__input:focus, .form__select:focus, .form__textarea:focus {
   border-color: #f75c48;
+}
+.form__input[aria-invalid=true], .form__select[aria-invalid=true], .form__textarea[aria-invalid=true] {
+  border-color: #c0392b;
+  background-color: #fff5f5;
 }
 .form__row {
   display: flex;
