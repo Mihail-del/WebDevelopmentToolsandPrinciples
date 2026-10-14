@@ -256,7 +256,7 @@ const paginationNav = document.querySelector(".pagination");
 
 // Filter Selectors
 const filterAge = document.getElementById("filter-age");
-const filterRegion = document.getElementById("filter-region");
+const filterCountry = document.getElementById("filter-country");
 const filterSex = document.getElementById("filter-sex");
 const filterPhoto = document.getElementById("filter-photo") || document.querySelector(".filters__checkbox-label:nth-child(1) .filters__checkbox");
 const filterFavorite = document.getElementById("filter-favorite") || document.querySelector(".filters__checkbox-label:nth-child(2) .filters__checkbox");
@@ -444,9 +444,26 @@ function renderPagination(totalPages) {
     }
 }
 
+// Fill the country list.
+function renderCountryFilter() {
+    const selectedCountry = filterCountry.value;
+    const countries = [...new Set(allUsers.map((user) => user.country).filter(Boolean))];
+    countries.sort((a, b) => a.localeCompare(b));
+    filterCountry.innerHTML = '<option value="all">All</option>';
+
+    countries.forEach((country) => {
+        const option = document.createElement("option");
+        option.value = country;
+        option.textContent = country;
+        filterCountry.appendChild(option);
+    });
+    filterCountry.value = selectedCountry;
+}
+
 // Apply Filters to the Displayed List
 function applyFilters(resetVisible = true) {
     const filters = {};
+    if (filterCountry.value !== "all") filters.country = filterCountry.value;
     if (filterSex && filterSex.value !== "all") filters.gender = filterSex.value;
     if (filterFavorite?.checked) filters.favorite = true;
     let filtered = filterUsers(allUsers, filters);
@@ -457,18 +474,6 @@ function applyFilters(resetVisible = true) {
         if (ageVal === "18-31") filtered = filtered.filter((u) => u.age >= 18 && u.age <= 31);
         else if (ageVal === "32-45") filtered = filtered.filter((u) => u.age >= 32 && u.age <= 45);
         else if (ageVal === "46+") filtered = filtered.filter((u) => u.age >= 46);
-    }
-
-    // Filter by Region
-    if (filterRegion) {
-        const regionVal = filterRegion.value;
-        const europeanCountries = ["germany", "ireland", "finland", "turkey", "switzerland", "norway", "spain", "denmark", "france", "netherlands", "uk", "ukraine"];
-        const asianCountries = ["iran", "india", "china", "japan"];
-        const americanCountries = ["united states", "canada", "brazil", "usa"];
-
-        if (regionVal === "Europe") filtered = filtered.filter((u) => europeanCountries.includes(u.country?.toLowerCase()));
-        else if (regionVal === "Asia") filtered = filtered.filter((u) => asianCountries.includes(u.country?.toLowerCase()));
-        else if (regionVal === "Americas") filtered = filtered.filter((u) => americanCountries.includes(u.country?.toLowerCase()));
     }
 
     // Filter by Photo availability
@@ -666,6 +671,7 @@ document.querySelector(".modal--form .form")?.addEventListener("submit", (e) => 
     }
     error.textContent = "";
     allUsers.push(newUser);
+    renderCountryFilter();
     applyFilters();
     renderFavorites();
     closeModals();
@@ -673,6 +679,7 @@ document.querySelector(".modal--form .form")?.addEventListener("submit", (e) => 
 });
 
 // Initial Render
+renderCountryFilter();
 renderTeachersGrid();
 renderStatsTable();
 renderFavorites();
