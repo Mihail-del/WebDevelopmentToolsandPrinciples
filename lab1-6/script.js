@@ -120,20 +120,27 @@ export function formatAndMergeUsers(rawUsers, extraUsers) {
     return Array.from(userMap.values());
 }
 
-// Check user fields
-export function validateUser(user) {
-    if (!user || typeof user !== "object") return false;
-
-    const isCapitalizedString = (val) =>
-        typeof val === "string" && /^\p{Lu}/u.test(val.trim());
-
+// Get errors for each field.
+function getUserErrors(user) {
+    const errors = {};
     const textFields = ["full_name", "gender", "note", "state", "city", "country"];
-    if (!textFields.every((field) => isCapitalizedString(user[field]))) return false;
-    if (typeof user.age !== "number" || !Number.isFinite(user.age) || user.age < 0) return false;
-    if (typeof user.email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) return false;
-    if (typeof user.phone !== "string" || !/^\+?[\d\s()-]+$/.test(user.phone)) return false;
 
-    const phone = user.phone.replace(/[\s()-]/g, "");
+    textFields.forEach((field) => {
+        const value = user[field];
+        if (typeof value !== "string" || !value.trim()) {
+            errors[field] = "This field is required.";
+        } else if (!/^\p{Lu}/u.test(value.trim())) {
+            errors[field] = "Start with a capital letter.";
+        }
+    });
+
+    if (typeof user.age !== "number" || !Number.isFinite(user.age) || user.age < 0) {
+        errors.age = "Enter a valid birth date that is not in the future.";
+    }
+    if (typeof user.email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) {
+        errors.email = "Enter a valid email, for example name@example.com.";
+    }
+
     const phoneFormats = {
         Ukraine: /^(?:\+380\d{9}|0\d{9})$/,
         "United States": /^(?:\+?1)?\d{10}$/,
@@ -147,9 +154,17 @@ export function validateUser(user) {
         Spain: /^(?:\+34)?\d{9}$/,
     };
     const phoneFormat = phoneFormats[user.country] || /^\+?\d{7,15}$/;
-    if (!phoneFormat.test(phone)) return false;
+    const phone = typeof user.phone === "string" ? user.phone.replace(/[\s()-]/g, "") : "";
+    if (typeof user.phone !== "string" || !/^\+?[\d\s()-]+$/.test(user.phone) || !phoneFormat.test(phone)) {
+        errors.phone = `Enter a valid phone number for ${user.country || "the selected country"}.`;
+    }
 
-    return true;
+    return errors;
+}
+
+// Check user fields.
+export function validateUser(user) {
+    return !!user && typeof user === "object" && Object.keys(getUserErrors(user)).length === 0;
 }
 
 // Filter users
@@ -256,7 +271,7 @@ const paginationNav = document.querySelector(".pagination");
 
 // Filter Selectors
 const filterAge = document.getElementById("filter-age");
-const filterRegion = document.getElementById("filter-region");
+const filterCountry = document.getElementById("filter-country");
 const filterSex = document.getElementById("filter-sex");
 const filterPhoto = document.getElementById("filter-photo") || document.querySelector(".filters__checkbox-label:nth-child(1) .filters__checkbox");
 const filterFavorite = document.getElementById("filter-favorite") || document.querySelector(".filters__checkbox-label:nth-child(2) .filters__checkbox");
@@ -297,8 +312,6 @@ function scrollFavorites(direction) {
     favoritesContainer.scrollBy({ left: direction * step });
 }
 
-favoritesPrev?.addEventListener("click", () => scrollFavorites(-1));
-favoritesNext?.addEventListener("click", () => scrollFavorites(1));
 favoritesContainer?.addEventListener("scroll", updateCarouselButtons);
 window.addEventListener("resize", updateCarouselButtons);
 
@@ -313,10 +326,10 @@ function renderTeachersGrid() {
         teachersGrid.innerHTML = '<p class="empty-message">No teachers found.</p>';
     }
 
-    topTeachers.forEach((user, idx) => {
+    topTeachers.forEach((user) => {
         const card = document.createElement("div");
         card.className = "teacher-card";
-        card.setAttribute("data-user-index", idx);
+        card.dataset.userIndex = allUsers.indexOf(user);
 
         const { first, last } = splitName(user.full_name);
 
@@ -346,15 +359,9 @@ function renderTeachersGrid() {
             card.querySelector(".teacher-card__avatar-wrap").style.backgroundColor = user.bg_color;
         }
 
-        card.addEventListener("click", () => openTeacherInfo(user));
         teachersGrid.appendChild(card);
     });
 }
-
-showMoreTeachers.addEventListener("click", () => {
-    visibleTeachers += 10;
-    renderTeachersGrid();
-});
 
 // Show favorite teachers
 function renderFavorites() {
@@ -372,6 +379,7 @@ function renderFavorites() {
     favorites.forEach((user) => {
         const card = document.createElement("div");
         card.className = "teacher-card";
+        card.dataset.userIndex = allUsers.indexOf(user);
 
         const { first, last } = splitName(user.full_name);
 
@@ -398,7 +406,6 @@ function renderFavorites() {
             <p class="teacher-card__country">${escapeHTML(user.country)}</p>
         `;
 
-        card.addEventListener("click", () => openTeacherInfo(user));
         favoritesContainer.appendChild(card);
     });
     updateCarouselButtons();
@@ -414,7 +421,7 @@ function renderStatsTable() {
     const start = (currentPage - 1) * ROWS_PER_PAGE;
     const pageUsers = displayedUsers.slice(start, start + ROWS_PER_PAGE);
     if (!pageUsers.length) {
-        statsTableBody.innerHTML = '<tr><td colspan="5">No teachers found.</td></tr>';
+        statsTableBody.innerHTML = '<tr><td colspan="6">No teachers found.</td></tr>';
     }
     document.getElementById("statsSummary").textContent = `${displayedUsers.length} teachers (${getPercentageByCondition(allUsers, (user) => displayedUsers.includes(user))}% of all teachers)`;
 
@@ -424,11 +431,12 @@ function renderStatsTable() {
             <td>${escapeHTML(user.full_name)}</td>
             <td>${escapeHTML(user.course || "—")}</td>
             <td>${user.age ?? "—"}</td>
+            <td>${escapeHTML(user.b_date?.slice(0, 10) || "—")}</td>
             <td>${escapeHTML(user.gender || "—")}</td>
             <td>${escapeHTML(user.country || "—")}</td>
         `;
         tr.style.cursor = "pointer";
-        tr.addEventListener("click", () => openTeacherInfo(user));
+        tr.dataset.userIndex = allUsers.indexOf(user);
         statsTableBody.appendChild(tr);
     });
 
@@ -447,18 +455,31 @@ function renderPagination(totalPages) {
         a.className = "pagination__link";
         a.textContent = String(i);
         if (i === currentPage) a.style.fontWeight = "bold";
-        a.addEventListener("click", (e) => {
-            e.preventDefault();
-            currentPage = i;
-            renderStatsTable();
-        });
+        a.dataset.page = i;
         paginationNav.appendChild(a);
     }
+}
+
+// Fill the country list.
+function renderCountryFilter() {
+    const selectedCountry = filterCountry.value;
+    const countries = [...new Set(allUsers.map((user) => user.country).filter(Boolean))];
+    countries.sort((a, b) => a.localeCompare(b));
+    filterCountry.innerHTML = '<option value="all">All</option>';
+
+    countries.forEach((country) => {
+        const option = document.createElement("option");
+        option.value = country;
+        option.textContent = country;
+        filterCountry.appendChild(option);
+    });
+    filterCountry.value = selectedCountry;
 }
 
 // Apply Filters to the Displayed List
 function applyFilters(resetVisible = true) {
     const filters = {};
+    if (filterCountry.value !== "all") filters.country = filterCountry.value;
     if (filterSex && filterSex.value !== "all") filters.gender = filterSex.value;
     if (filterFavorite?.checked) filters.favorite = true;
     let filtered = filterUsers(allUsers, filters);
@@ -469,18 +490,6 @@ function applyFilters(resetVisible = true) {
         if (ageVal === "18-31") filtered = filtered.filter((u) => u.age >= 18 && u.age <= 31);
         else if (ageVal === "32-45") filtered = filtered.filter((u) => u.age >= 32 && u.age <= 45);
         else if (ageVal === "46+") filtered = filtered.filter((u) => u.age >= 46);
-    }
-
-    // Filter by Region
-    if (filterRegion) {
-        const regionVal = filterRegion.value;
-        const europeanCountries = ["germany", "ireland", "finland", "turkey", "switzerland", "norway", "spain", "denmark", "france", "netherlands", "uk", "ukraine"];
-        const asianCountries = ["iran", "india", "china", "japan"];
-        const americanCountries = ["united states", "canada", "brazil", "usa"];
-
-        if (regionVal === "Europe") filtered = filtered.filter((u) => europeanCountries.includes(u.country?.toLowerCase()));
-        else if (regionVal === "Asia") filtered = filtered.filter((u) => asianCountries.includes(u.country?.toLowerCase()));
-        else if (regionVal === "Americas") filtered = filtered.filter((u) => americanCountries.includes(u.country?.toLowerCase()));
     }
 
     // Filter by Photo availability
@@ -499,13 +508,59 @@ function applyFilters(resetVisible = true) {
     renderStatsTable();
 }
 
-// Event Listeners for Filter Inputs
-[filterAge, filterRegion, filterSex].forEach((el) => el?.addEventListener("change", applyFilters));
-filterPhoto?.addEventListener("change", applyFilters);
-filterFavorite?.addEventListener("change", applyFilters);
+// Handle all filter changes.
+document.querySelector(".filters").addEventListener("change", () => applyFilters());
 
-document.querySelectorAll(".stats-table th[data-sort]").forEach((header) => {
-    header.querySelector("button").addEventListener("click", () => {
+// Handle clicks in one place.
+document.addEventListener("click", (e) => {
+    const target = e.target;
+
+    if (target.closest("#openAddTeacherBtn, #openAddTeacherFooterBtn")) {
+        addTeacherModal.classList.add("is-active");
+        return;
+    }
+    if (target.closest(".modal__close") || target === addTeacherModal || target === teacherInfoModal) {
+        closeModals();
+        return;
+    }
+
+    const favBtn = target.closest("#toggleFavBtn");
+    if (favBtn) {
+        const user = allUsers[Number(teacherInfoBody.dataset.userIndex)];
+        user.favorite = !user.favorite;
+        favBtn.textContent = user.favorite ? "★" : "☆";
+        favBtn.style.color = user.favorite ? "#f7ca18" : "#ccc";
+        favBtn.setAttribute("aria-pressed", String(user.favorite));
+        applyFilters(false);
+        renderFavorites();
+        return;
+    }
+
+    const teacher = target.closest(".teacher-card[data-user-index], tr[data-user-index]");
+    if (teacher) {
+        openTeacherInfo(allUsers[Number(teacher.dataset.userIndex)]);
+        return;
+    }
+    if (target.closest("#showMoreTeachers")) {
+        visibleTeachers += 10;
+        renderTeachersGrid();
+        return;
+    }
+    if (target.closest("#favoritesPrev, #favoritesNext")) {
+        scrollFavorites(target.closest("#favoritesPrev") ? -1 : 1);
+        return;
+    }
+
+    const pageLink = target.closest(".pagination__link");
+    if (pageLink) {
+        e.preventDefault();
+        currentPage = Number(pageLink.dataset.page);
+        renderStatsTable();
+        return;
+    }
+
+    const header = target.closest(".stats-table th[data-sort]");
+    if (header) {
         const field = header.dataset.sort;
         sortOrder = sortField === field && sortOrder === "asc" ? "desc" : "asc";
         sortField = field;
@@ -516,7 +571,7 @@ document.querySelectorAll(".stats-table th[data-sort]").forEach((header) => {
             item.querySelector(".sort-arrow").textContent = active ? (sortOrder === "asc" ? "↑" : "↓") : "";
         });
         applyFilters();
-    });
+    }
 });
 
 // Open Teacher Details Modal
@@ -557,18 +612,7 @@ function openTeacherInfo(user) {
         </div>
     `;
 
-    const favBtn = document.getElementById("toggleFavBtn");
-    favBtn?.addEventListener("click", () => {
-        user.favorite = !user.favorite;
-        favBtn.textContent = user.favorite ? "★" : "☆";
-        favBtn.style.color = user.favorite ? "#f7ca18" : "#ccc";
-        favBtn.setAttribute("aria-pressed", String(user.favorite));
-
-        // Update the cards.
-        applyFilters(false);
-        renderFavorites();
-    });
-
+    teacherInfoBody.dataset.userIndex = allUsers.indexOf(user);
     teacherInfoModal.classList.add("is-active");
 }
 
@@ -577,14 +621,6 @@ function closeModals() {
     teacherInfoModal?.classList.remove("is-active");
 }
 
-document.getElementById("openAddTeacherBtn")?.addEventListener("click", () => addTeacherModal?.classList.add("is-active"));
-document.getElementById("openAddTeacherFooterBtn")?.addEventListener("click", () => addTeacherModal?.classList.add("is-active"));
-document.getElementById("closeAddTeacherModalBtn")?.addEventListener("click", closeModals);
-document.getElementById("closeTeacherInfoModalBtn")?.addEventListener("click", closeModals);
-
-window.addEventListener("click", (e) => {
-    if (e.target === addTeacherModal || e.target === teacherInfoModal) closeModals();
-});
 window.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeModals();
 });
@@ -601,63 +637,91 @@ searchInput?.addEventListener("input", () => {
     }
 });
 
-// Add Teacher Form Submission
-document.querySelector(".modal--form .form")?.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const form = e.target;
+const addTeacherForm = document.querySelector(".modal--form .form");
+const teacherFields = {
+    full_name: "name",
+    country: "country",
+    city: "city",
+    state: "state",
+    email: "email",
+    phone: "phone",
+    age: "b_date",
+    note: "note",
+};
+let teacherFormSubmitted = false;
 
-    const nameInput = form.querySelector('input[placeholder="Enter name"]');
-    const specialitySelect = form.querySelectorAll(".form__select")[0];
-    const countrySelect = form.querySelectorAll(".form__select")[1];
-    const cityInput = form.querySelectorAll('.form__row input[type="text"]')[0];
-    const stateInput = form.elements.state;
-    const emailInput = form.querySelector('input[type="email"]');
-    const phoneInput = form.querySelector('input[type="tel"]');
-    const dobInput = form.querySelector('input[type="date"]');
-    const sexRadio = form.querySelector('input[name="sex"]:checked');
-    const colorInput = form.querySelector(".form__color-input");
-    const textarea = form.querySelector(".form__textarea");
+// Read the form values.
+function readTeacherForm() {
+    const fields = addTeacherForm.elements;
+    const gender = capitalize(fields.sex.value);
 
-    const birthDate = dobInput?.value || null;
-    const computedAge = getAge(birthDate);
-
-    const newUser = {
-        gender: sexRadio?.value ? capitalize(sexRadio.value) : "Male",
-        title: sexRadio?.value === "male" ? "Mr" : "Ms",
-        full_name: nameInput?.value.trim() || "",
-        city: cityInput?.value.trim() || null,
-        state: stateInput.value.trim(),
-        country: countrySelect?.value || null,
+    return {
+        gender,
+        title: gender === "Male" ? "Mr" : "Ms",
+        full_name: fields.name.value.trim(),
+        city: fields.city.value.trim(),
+        state: fields.state.value.trim(),
+        country: fields.country.value,
         postcode: null,
         coordinates: null,
         timezone: null,
-        email: emailInput?.value.trim() || null,
-        b_date: birthDate,
-        age: computedAge,
-        phone: phoneInput?.value.trim() || null,
+        email: fields.email.value.trim(),
+        b_date: fields.b_date.value || null,
+        age: getAge(fields.b_date.value),
+        phone: fields.phone.value.trim(),
         picture_large: null,
         picture_thumbnail: null,
         id: `user-${Date.now()}`,
         favorite: false,
-        course: specialitySelect?.value || getRandomCourse(),
-        bg_color: colorInput?.value || "#ffffff",
-        note: textarea?.value.trim() || "No additional notes.",
+        course: fields.course.value,
+        bg_color: fields.bg_color.value,
+        note: fields.note.value.trim() || "No additional notes.",
     };
+}
 
-    const error = document.getElementById("addTeacherError");
-    if (!validateUser(newUser)) {
-        error.textContent = "Start name, state, city and notes with a capital letter. Check the email, birth date and phone format for the selected country.";
+// Show errors below the fields.
+function showTeacherErrors(errors) {
+    Object.entries(teacherFields).forEach(([key, name]) => {
+        const field = addTeacherForm.elements[name];
+        const error = document.getElementById(`${field.id}-error`);
+        const message = errors[key] || "";
+        field.setAttribute("aria-invalid", String(!!message));
+        error.textContent = message;
+        error.hidden = !message;
+    });
+}
+
+// Check the fields again after editing.
+addTeacherForm.addEventListener("input", () => {
+    if (teacherFormSubmitted) {
+        showTeacherErrors(getUserErrors(readTeacherForm()));
+    }
+});
+
+// Add the teacher if all fields are valid.
+addTeacherForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    teacherFormSubmitted = true;
+    const newUser = readTeacherForm();
+    const errors = getUserErrors(newUser);
+    showTeacherErrors(errors);
+
+    if (Object.keys(errors).length) {
+        addTeacherForm.querySelector('[aria-invalid="true"]').focus();
         return;
     }
-    error.textContent = "";
+
     allUsers.push(newUser);
+    renderCountryFilter();
     applyFilters();
     renderFavorites();
     closeModals();
-    form.reset();
+    addTeacherForm.reset();
+    teacherFormSubmitted = false;
 });
 
 // Initial Render
+renderCountryFilter();
 renderTeachersGrid();
 renderStatsTable();
 renderFavorites();

@@ -414,9 +414,9 @@ body {
     grid-column: 1 / -1;
 }
 
-.form__error {
-    color: $primary-dark;
-    font-size: 13px;
+.form__field-error {
+    color: #c0392b;
+    font-size: 12px;
 }
 
 // About text.
@@ -523,6 +523,11 @@ body {
 
         &:focus {
             border-color: $primary-color;
+        }
+
+        &[aria-invalid="true"] {
+            border-color: #c0392b;
+            background-color: #fff5f5;
         }
     }
 
