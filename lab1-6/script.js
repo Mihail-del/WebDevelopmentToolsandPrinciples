@@ -34,7 +34,7 @@ function getAge(birthDate) {
 }
 
 // Merge users
-export function formatAndMergeUsers(rawUsers, extraUsers) {
+export function formatAndMergeUsers(rawUsers = [], extraUsers = []) {
     const formattedRawUsers = rawUsers.map((user) => {
         return {
             gender: user.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : null,
@@ -48,14 +48,14 @@ export function formatAndMergeUsers(rawUsers, extraUsers) {
             timezone: user.location?.timezone || null,
             email: user.email || null,
             b_date: user.dob?.date || null,
-            age: user.dob?.age ?? null,
+            age: user.dob?.age ?? getAge(user.dob?.date),
             phone: user.phone || null,
             picture_large: user.picture?.large || null,
             picture_thumbnail: user.picture?.thumbnail || null,
 
-            id: (user.id?.name && user.id?.value)
+            id: user.login?.uuid || ((user.id?.name && user.id?.value)
                 ? `${user.id.name}${user.id.value}`
-                : (user.login?.uuid || `user-${Math.random()}`),
+                : `user-${crypto.randomUUID()}`),
             favorite: false,
             course: getRandomCourse(),
             bg_color: "#ffffff",
@@ -92,7 +92,7 @@ export function formatAndMergeUsers(rawUsers, extraUsers) {
     const userMap = new Map();
 
     [...formattedRawUsers, ...normalizedExtraUsers].forEach((user) => {
-        const key = user.full_name.toLowerCase().trim() || user.email?.toLowerCase().trim() || user.id;
+        const key = user.id;
 
         if (!userMap.has(key)) {
             userMap.set(key, { ...user });
@@ -475,7 +475,14 @@ function renderCountryFilter() {
         option.textContent = country;
         filterCountry.appendChild(option);
     });
-    filterCountry.value = selectedCountry;
+    filterCountry.value = countries.includes(selectedCountry) ? selectedCountry : "all";
+}
+
+// Refresh every section from the same source list.
+function refreshUsers() {
+    renderCountryFilter();
+    applyFilters(false);
+    renderFavorites();
 }
 
 // Apply Filters to the Displayed List
@@ -714,9 +721,7 @@ addTeacherForm.addEventListener("submit", (e) => {
     }
 
     allUsers.push(newUser);
-    renderCountryFilter();
-    applyFilters();
-    renderFavorites();
+    refreshUsers();
     closeModals();
     addTeacherForm.reset();
     teacherFormSubmitted = false;
@@ -730,9 +735,7 @@ async function loadInitialUsers() {
     try {
         const data = await fetchUsers(50);
         allUsers.push(...formatAndMergeUsers(data.results, []));
-        renderCountryFilter();
-        applyFilters();
-        renderFavorites();
+        refreshUsers();
         loadStatus.textContent = "";
     } catch (error) {
         loadStatus.textContent = "Could not load teachers. Please try again.";
