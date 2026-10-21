@@ -1,4 +1,4 @@
-import { randomUserMock, additionalUsers } from "./FE4U-Lab2-mock.js";
+import { fetchUsers } from "./api.js";
 
 const COURSES = [
     "Mathematics",
@@ -247,7 +247,7 @@ export function getPercentageByCondition(users, predicate) {
 
 // Page content
 
-let allUsers = formatAndMergeUsers(randomUserMock, additionalUsers);
+let allUsers = [];
 let displayedUsers = [...allUsers];
 const ROWS_PER_PAGE = 10;
 let currentPage = 1;
@@ -258,6 +258,8 @@ let sortOrder = "asc";
 // DOM Selectors
 const teachersGrid = document.getElementById("teachersGrid");
 const showMoreTeachers = document.getElementById("showMoreTeachers");
+const loadStatus = document.getElementById("loadStatus");
+const retryLoad = document.getElementById("retryLoad");
 const statsTableBody = document.getElementById("statsTableBody");
 const favoritesContainer = document.getElementById("favoritesTrack");
 const favoritesPrev = document.getElementById("favoritesPrev");
@@ -720,8 +722,28 @@ addTeacherForm.addEventListener("submit", (e) => {
     teacherFormSubmitted = false;
 });
 
-// Initial Render
-renderCountryFilter();
-renderTeachersGrid();
+// Load teachers without reloading the page.
+async function loadInitialUsers() {
+    retryLoad.hidden = true;
+    loadStatus.textContent = "Loading teachers...";
+    teachersGrid.setAttribute("aria-busy", "true");
+    try {
+        const data = await fetchUsers(50);
+        allUsers.push(...formatAndMergeUsers(data.results, []));
+        renderCountryFilter();
+        applyFilters();
+        renderFavorites();
+        loadStatus.textContent = "";
+    } catch (error) {
+        loadStatus.textContent = "Could not load teachers. Please try again.";
+        retryLoad.hidden = false;
+        console.error(error);
+    } finally {
+        teachersGrid.setAttribute("aria-busy", "false");
+    }
+}
+
+retryLoad.addEventListener("click", loadInitialUsers);
 renderStatsTable();
 renderFavorites();
+loadInitialUsers();
