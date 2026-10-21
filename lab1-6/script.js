@@ -251,7 +251,10 @@ let allUsers = [];
 let displayedUsers = [...allUsers];
 const ROWS_PER_PAGE = 10;
 let currentPage = 1;
-let visibleTeachers = 10;
+const requestSeed = crypto.randomUUID();
+let nextPage = 6; // The first 50 users cover five pages of 10.
+let initialLoaded = false;
+let isLoadingUsers = false;
 let sortField = "";
 let sortOrder = "asc";
 
@@ -321,8 +324,7 @@ window.addEventListener("resize", updateCarouselButtons);
 function renderTeachersGrid() {
     if (!teachersGrid) return;
     teachersGrid.innerHTML = "";
-    const topTeachers = displayedUsers.slice(0, visibleTeachers);
-    showMoreTeachers.hidden = visibleTeachers >= displayedUsers.length;
+    const topTeachers = displayedUsers;
 
     if (!topTeachers.length) {
         teachersGrid.innerHTML = '<p class="empty-message">No teachers found.</p>';
@@ -481,12 +483,12 @@ function renderCountryFilter() {
 // Refresh every section from the same source list.
 function refreshUsers() {
     renderCountryFilter();
-    applyFilters(false);
+    applyFilters();
     renderFavorites();
 }
 
 // Apply Filters to the Displayed List
-function applyFilters(resetVisible = true) {
+function applyFilters() {
     const filters = {};
     if (filterCountry.value !== "all") filters.country = filterCountry.value;
     if (filterSex && filterSex.value !== "all") filters.gender = filterSex.value;
@@ -511,7 +513,6 @@ function applyFilters(resetVisible = true) {
     if (sortField) filtered = sortUsers(filtered, sortField, sortOrder);
 
     displayedUsers = filtered;
-    if (resetVisible !== false) visibleTeachers = 10;
     currentPage = 1;
     renderTeachersGrid();
     renderStatsTable();
@@ -540,7 +541,7 @@ document.addEventListener("click", (e) => {
         favBtn.textContent = user.favorite ? "★" : "☆";
         favBtn.style.color = user.favorite ? "#f7ca18" : "#ccc";
         favBtn.setAttribute("aria-pressed", String(user.favorite));
-        applyFilters(false);
+        applyFilters();
         renderFavorites();
         return;
     }
@@ -551,8 +552,7 @@ document.addEventListener("click", (e) => {
         return;
     }
     if (target.closest("#showMoreTeachers")) {
-        visibleTeachers += 10;
-        renderTeachersGrid();
+        loadUsers();
         return;
     }
     if (target.closest("#favoritesPrev, #favoritesNext")) {
@@ -727,14 +727,21 @@ addTeacherForm.addEventListener("submit", (e) => {
     teacherFormSubmitted = false;
 });
 
-// Load teachers without reloading the page.
-async function loadInitialUsers() {
+// Keep the same seed and advance only after a successful request.
+async function loadUsers(initial = false) {
+    if (isLoadingUsers) return;
+    isLoadingUsers = true;
     retryLoad.hidden = true;
+    showMoreTeachers.disabled = true;
     loadStatus.textContent = "Loading teachers...";
     teachersGrid.setAttribute("aria-busy", "true");
     try {
-        const data = await fetchUsers(50);
-        allUsers.push(...formatAndMergeUsers(data.results, []));
+        const data = await fetchUsers(initial ? 50 : 10, initial ? 1 : nextPage, requestSeed);
+        const existingIds = new Set(allUsers.map((user) => user.id));
+        const newUsers = formatAndMergeUsers(data.results);
+        allUsers.push(...newUsers.filter((user) => !existingIds.has(user.id)));
+        initialLoaded = true;
+        nextPage = initial ? 6 : nextPage + 1;
         refreshUsers();
         loadStatus.textContent = "";
     } catch (error) {
@@ -742,11 +749,14 @@ async function loadInitialUsers() {
         retryLoad.hidden = false;
         console.error(error);
     } finally {
+        isLoadingUsers = false;
+        showMoreTeachers.disabled = false;
+        showMoreTeachers.hidden = !initialLoaded;
         teachersGrid.setAttribute("aria-busy", "false");
     }
 }
 
-retryLoad.addEventListener("click", loadInitialUsers);
+retryLoad.addEventListener("click", () => loadUsers(!initialLoaded));
 renderStatsTable();
 renderFavorites();
-loadInitialUsers();
+loadUsers(true);
