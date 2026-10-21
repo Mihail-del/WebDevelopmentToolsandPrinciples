@@ -15,3 +15,14 @@ export async function fetchUsers(results = 50, page = 1, seed = "") {
     }
     return data;
 }
+
+export async function saveTeacher(teacher) {
+    const response = await fetch("http://localhost:3000/teachers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(teacher),
+        signal: AbortSignal.timeout(15000),
+    });
+    if (!response.ok) throw new Error(`Could not save teacher (HTTP ${response.status}).`);
+    return response.json();
+}

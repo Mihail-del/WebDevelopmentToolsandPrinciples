@@ -1,4 +1,4 @@
-import { fetchUsers } from "./api.js";
+import { fetchUsers, saveTeacher } from "./api.js";
 
 const COURSES = [
     "Mathematics",
@@ -658,6 +658,9 @@ const teacherFields = {
     note: "note",
 };
 let teacherFormSubmitted = false;
+let isSavingTeacher = false;
+const teacherSaveStatus = document.getElementById("teacherSaveStatus");
+const submitTeacher = addTeacherForm.querySelector('[type="submit"]');
 
 // Read the form values.
 function readTeacherForm() {
@@ -708,8 +711,10 @@ addTeacherForm.addEventListener("input", () => {
 });
 
 // Add the teacher if all fields are valid.
-addTeacherForm.addEventListener("submit", (e) => {
+addTeacherForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (isSavingTeacher) return;
+    teacherSaveStatus.textContent = "";
     teacherFormSubmitted = true;
     const newUser = readTeacherForm();
     const errors = getUserErrors(newUser);
@@ -720,11 +725,27 @@ addTeacherForm.addEventListener("submit", (e) => {
         return;
     }
 
-    allUsers.push(newUser);
-    refreshUsers();
-    closeModals();
-    addTeacherForm.reset();
-    teacherFormSubmitted = false;
+    isSavingTeacher = true;
+    submitTeacher.disabled = true;
+    submitTeacher.textContent = "Saving...";
+    addTeacherForm.setAttribute("aria-busy", "true");
+    try {
+        const savedUser = await saveTeacher(newUser);
+        allUsers.push(savedUser);
+        refreshUsers();
+        closeModals();
+        addTeacherForm.reset();
+        showTeacherErrors({});
+        teacherFormSubmitted = false;
+    } catch (error) {
+        teacherSaveStatus.textContent = "Could not save teacher. Check that the local server is running and try again.";
+        console.error(error);
+    } finally {
+        isSavingTeacher = false;
+        submitTeacher.disabled = false;
+        submitTeacher.textContent = "Add";
+        addTeacherForm.setAttribute("aria-busy", "false");
+    }
 });
 
 // Keep the same seed and advance only after a successful request.
