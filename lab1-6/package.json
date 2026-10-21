@@ -1,0 +1,12 @@
+{
+  "name": "teachinder-labs",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "json-server --watch db.json --host localhost --port 3000 --static ."
+  },
+  "devDependencies": {
+    "json-server": "0.17.4"
+  }
+}
