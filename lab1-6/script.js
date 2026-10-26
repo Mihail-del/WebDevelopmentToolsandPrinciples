@@ -1,4 +1,4 @@
-import { randomUserMock, additionalUsers } from "./FE4U-Lab2-mock.js";
+import { fetchUsers, saveTeacher } from "./api.js";
 
 const COURSES = [
     "Mathematics",
@@ -34,7 +34,7 @@ function getAge(birthDate) {
 }
 
 // Merge users
-export function formatAndMergeUsers(rawUsers, extraUsers) {
+export function formatAndMergeUsers(rawUsers = [], extraUsers = []) {
     const formattedRawUsers = rawUsers.map((user) => {
         return {
             gender: user.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : null,
@@ -48,14 +48,14 @@ export function formatAndMergeUsers(rawUsers, extraUsers) {
             timezone: user.location?.timezone || null,
             email: user.email || null,
             b_date: user.dob?.date || null,
-            age: user.dob?.age ?? null,
+            age: user.dob?.age ?? getAge(user.dob?.date),
             phone: user.phone || null,
             picture_large: user.picture?.large || null,
             picture_thumbnail: user.picture?.thumbnail || null,
 
-            id: (user.id?.name && user.id?.value)
+            id: user.login?.uuid || ((user.id?.name && user.id?.value)
                 ? `${user.id.name}${user.id.value}`
-                : (user.login?.uuid || `user-${Math.random()}`),
+                : `user-${crypto.randomUUID()}`),
             favorite: false,
             course: getRandomCourse(),
             bg_color: "#ffffff",
@@ -92,7 +92,7 @@ export function formatAndMergeUsers(rawUsers, extraUsers) {
     const userMap = new Map();
 
     [...formattedRawUsers, ...normalizedExtraUsers].forEach((user) => {
-        const key = user.full_name.toLowerCase().trim() || user.email?.toLowerCase().trim() || user.id;
+        const key = user.id;
 
         if (!userMap.has(key)) {
             userMap.set(key, { ...user });
@@ -247,17 +247,22 @@ export function getPercentageByCondition(users, predicate) {
 
 // Page content
 
-let allUsers = formatAndMergeUsers(randomUserMock, additionalUsers);
+let allUsers = [];
 let displayedUsers = [...allUsers];
 const ROWS_PER_PAGE = 10;
 let currentPage = 1;
-let visibleTeachers = 10;
+const requestSeed = crypto.randomUUID();
+let nextPage = 6; // The first 50 users cover five pages of 10.
+let initialLoaded = false;
+let isLoadingUsers = false;
 let sortField = "";
 let sortOrder = "asc";
 
 // DOM Selectors
 const teachersGrid = document.getElementById("teachersGrid");
 const showMoreTeachers = document.getElementById("showMoreTeachers");
+const loadStatus = document.getElementById("loadStatus");
+const retryLoad = document.getElementById("retryLoad");
 const statsTableBody = document.getElementById("statsTableBody");
 const favoritesContainer = document.getElementById("favoritesTrack");
 const favoritesPrev = document.getElementById("favoritesPrev");
@@ -319,8 +324,7 @@ window.addEventListener("resize", updateCarouselButtons);
 function renderTeachersGrid() {
     if (!teachersGrid) return;
     teachersGrid.innerHTML = "";
-    const topTeachers = displayedUsers.slice(0, visibleTeachers);
-    showMoreTeachers.hidden = visibleTeachers >= displayedUsers.length;
+    const topTeachers = displayedUsers;
 
     if (!topTeachers.length) {
         teachersGrid.innerHTML = '<p class="empty-message">No teachers found.</p>';
@@ -473,11 +477,18 @@ function renderCountryFilter() {
         option.textContent = country;
         filterCountry.appendChild(option);
     });
-    filterCountry.value = selectedCountry;
+    filterCountry.value = countries.includes(selectedCountry) ? selectedCountry : "all";
+}
+
+// Refresh every section from the same source list.
+function refreshUsers() {
+    renderCountryFilter();
+    applyFilters();
+    renderFavorites();
 }
 
 // Apply Filters to the Displayed List
-function applyFilters(resetVisible = true) {
+function applyFilters() {
     const filters = {};
     if (filterCountry.value !== "all") filters.country = filterCountry.value;
     if (filterSex && filterSex.value !== "all") filters.gender = filterSex.value;
@@ -502,7 +513,6 @@ function applyFilters(resetVisible = true) {
     if (sortField) filtered = sortUsers(filtered, sortField, sortOrder);
 
     displayedUsers = filtered;
-    if (resetVisible !== false) visibleTeachers = 10;
     currentPage = 1;
     renderTeachersGrid();
     renderStatsTable();
@@ -531,7 +541,7 @@ document.addEventListener("click", (e) => {
         favBtn.textContent = user.favorite ? "★" : "☆";
         favBtn.style.color = user.favorite ? "#f7ca18" : "#ccc";
         favBtn.setAttribute("aria-pressed", String(user.favorite));
-        applyFilters(false);
+        applyFilters();
         renderFavorites();
         return;
     }
@@ -542,8 +552,7 @@ document.addEventListener("click", (e) => {
         return;
     }
     if (target.closest("#showMoreTeachers")) {
-        visibleTeachers += 10;
-        renderTeachersGrid();
+        loadUsers();
         return;
     }
     if (target.closest("#favoritesPrev, #favoritesNext")) {
@@ -649,6 +658,9 @@ const teacherFields = {
     note: "note",
 };
 let teacherFormSubmitted = false;
+let isSavingTeacher = false;
+const teacherSaveStatus = document.getElementById("teacherSaveStatus");
+const submitTeacher = addTeacherForm.querySelector('[type="submit"]');
 
 // Read the form values.
 function readTeacherForm() {
@@ -699,8 +711,10 @@ addTeacherForm.addEventListener("input", () => {
 });
 
 // Add the teacher if all fields are valid.
-addTeacherForm.addEventListener("submit", (e) => {
+addTeacherForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (isSavingTeacher) return;
+    teacherSaveStatus.textContent = "";
     teacherFormSubmitted = true;
     const newUser = readTeacherForm();
     const errors = getUserErrors(newUser);
@@ -711,17 +725,59 @@ addTeacherForm.addEventListener("submit", (e) => {
         return;
     }
 
-    allUsers.push(newUser);
-    renderCountryFilter();
-    applyFilters();
-    renderFavorites();
-    closeModals();
-    addTeacherForm.reset();
-    teacherFormSubmitted = false;
+    isSavingTeacher = true;
+    submitTeacher.disabled = true;
+    submitTeacher.textContent = "Saving...";
+    addTeacherForm.setAttribute("aria-busy", "true");
+    try {
+        const savedUser = await saveTeacher(newUser);
+        allUsers.push(savedUser);
+        refreshUsers();
+        closeModals();
+        addTeacherForm.reset();
+        showTeacherErrors({});
+        teacherFormSubmitted = false;
+    } catch (error) {
+        teacherSaveStatus.textContent = "Could not save teacher. Check that the local server is running and try again.";
+        console.error(error);
+    } finally {
+        isSavingTeacher = false;
+        submitTeacher.disabled = false;
+        submitTeacher.textContent = "Add";
+        addTeacherForm.setAttribute("aria-busy", "false");
+    }
 });
 
-// Initial Render
-renderCountryFilter();
-renderTeachersGrid();
+// Keep the same seed and advance only after a successful request.
+async function loadUsers(initial = false) {
+    if (isLoadingUsers) return;
+    isLoadingUsers = true;
+    retryLoad.hidden = true;
+    showMoreTeachers.disabled = true;
+    loadStatus.textContent = "Loading teachers...";
+    teachersGrid.setAttribute("aria-busy", "true");
+    try {
+        const data = await fetchUsers(initial ? 50 : 10, initial ? 1 : nextPage, requestSeed);
+        const existingIds = new Set(allUsers.map((user) => user.id));
+        const newUsers = formatAndMergeUsers(data.results);
+        allUsers.push(...newUsers.filter((user) => !existingIds.has(user.id)));
+        initialLoaded = true;
+        nextPage = initial ? 6 : nextPage + 1;
+        refreshUsers();
+        loadStatus.textContent = "";
+    } catch (error) {
+        loadStatus.textContent = "Could not load teachers. Please try again.";
+        retryLoad.hidden = false;
+        console.error(error);
+    } finally {
+        isLoadingUsers = false;
+        showMoreTeachers.disabled = false;
+        showMoreTeachers.hidden = !initialLoaded;
+        teachersGrid.setAttribute("aria-busy", "false");
+    }
+}
+
+retryLoad.addEventListener("click", () => loadUsers(!initialLoaded));
 renderStatsTable();
 renderFavorites();
+loadUsers(true);
