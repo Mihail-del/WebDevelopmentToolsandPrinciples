@@ -1,6 +1,7 @@
 import { fetchUsers, saveTeacher } from "./api.js";
 import { showTeacherMap, removeTeacherMap } from "./teacher-map.js";
 import { renderStatisticsChart } from "./statistics-chart.js";
+import { getDaysUntilBirthday } from "./birthday.js";
 
 import {
     formatAndMergeUsers, getAge, getUserErrors, filterUsers, sortUsers,
@@ -293,6 +294,11 @@ function openTeacherInfo(user) {
             </div>`;
     }
 
+    const birthdayDays = getDaysUntilBirthday(user.b_date);
+    const birthdayMessage = birthdayDays === null ? "Birthday is not available." :
+        birthdayDays === 0 ? "Birthday is today!" :
+        `${birthdayDays} ${birthdayDays === 1 ? "day" : "days"} until next birthday.`;
+
     removeTeacherMap();
     teacherInfoBody.innerHTML = `
         ${photoHTML}
@@ -306,6 +312,7 @@ function openTeacherInfo(user) {
             <h4 class="info-card__subject">${escapeHTML(user.course)}</h4>
             <p class="info-card__meta">${escapeHTML([user.city, user.country].filter(Boolean).join(", ") || "—")}</p>
             <p class="info-card__meta">${user.age ?? "—"}, ${escapeHTML(user.gender || "—")}</p>
+            <p class="info-card__meta" id="birthdayCountdown">${birthdayMessage}</p>
             ${user.email ? `<p class="info-card__meta"><a href="mailto:${escapeHTML(user.email)}" class="info-card__link">${escapeHTML(user.email)}</a></p>` : ""}
             ${user.phone ? `<p class="info-card__meta">${escapeHTML(user.phone)}</p>` : ""}
         </div>
