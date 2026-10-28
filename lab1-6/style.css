@@ -654,3 +654,20 @@ body {
     max-width: 650px;
     margin: 0 auto;
 }
+
+/* Alternative statistics views. */
+.statistics-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+.teacher-report {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+}
+[hidden] {
+    display: none !important;
+}

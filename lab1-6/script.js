@@ -2,6 +2,7 @@ import { fetchUsers, saveTeacher } from "./api.js";
 import { showTeacherMap, removeTeacherMap } from "./teacher-map.js";
 import { renderStatisticsChart } from "./statistics-chart.js";
 import { getDaysUntilBirthday } from "./birthday.js";
+import { renderTeacherReport } from "./teacher-reports.js";
 
 import {
     formatAndMergeUsers, getAge, getUserErrors, filterUsers, sortUsers,
@@ -37,6 +38,7 @@ const searchInput = document.querySelector(".search-form__input");
 const searchForm = document.querySelector(".search-form");
 const teacherSort = document.getElementById("teacherSort");
 const teacherSortOrder = document.getElementById("teacherSortOrder");
+const statisticsView = document.getElementById("statisticsView");
 
 // Filter Selectors
 const filterAge = document.getElementById("filter-age");
@@ -194,11 +196,22 @@ function renderCountryFilter() {
     filterCountry.value = countries.includes(selectedCountry) ? selectedCountry : "all";
 }
 
+// Switch between the filtered diagram and reports for all loaded teachers.
+function renderStatisticsView() {
+    const isChart = statisticsView.value === "chart";
+    document.getElementById("chartPanel").hidden = !isChart;
+    document.getElementById("reportPanel").hidden = isChart;
+    if (!isChart) renderTeacherReport(allUsers, statisticsView.value);
+}
+
+statisticsView.addEventListener("change", renderStatisticsView);
+
 // Refresh every section from the same source list.
 function refreshUsers() {
     renderCountryFilter();
     applyFilters();
     renderFavorites();
+    renderStatisticsView();
 }
 
 // Apply Filters to the Displayed List
@@ -256,6 +269,7 @@ document.addEventListener("click", (e) => {
         favBtn.setAttribute("aria-pressed", String(user.favorite));
         applyFilters();
         renderFavorites();
+        renderStatisticsView();
         return;
     }
 
