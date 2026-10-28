@@ -764,3 +764,16 @@ body {
     border-radius: 6px;
     background: #f5f5f5;
 }
+
+/* Country statistics. */
+.statistics-heading {
+    text-align: center;
+    margin-bottom: 16px;
+    font-size: 17px;
+}
+.statistics-chart {
+    position: relative;
+    height: 420px;
+    max-width: 650px;
+    margin: 0 auto;
+}

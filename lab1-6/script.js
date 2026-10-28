@@ -1,5 +1,6 @@
 import { fetchUsers, saveTeacher } from "./api.js";
 import { showTeacherMap, removeTeacherMap } from "./teacher-map.js";
+import { renderStatisticsChart } from "./statistics-chart.js";
 
 const COURSES = [
     "Mathematics",
@@ -250,21 +251,16 @@ export function getPercentageByCondition(users, predicate) {
 
 let allUsers = [];
 let displayedUsers = [...allUsers];
-const ROWS_PER_PAGE = 10;
-let currentPage = 1;
 const requestSeed = crypto.randomUUID();
 let nextPage = 6; // The first 50 users cover five pages of 10.
 let initialLoaded = false;
 let isLoadingUsers = false;
-let sortField = "";
-let sortOrder = "asc";
 
 // DOM Selectors
 const teachersGrid = document.getElementById("teachersGrid");
 const showMoreTeachers = document.getElementById("showMoreTeachers");
 const loadStatus = document.getElementById("loadStatus");
 const retryLoad = document.getElementById("retryLoad");
-const statsTableBody = document.getElementById("statsTableBody");
 const favoritesContainer = document.getElementById("favoritesTrack");
 const favoritesPrev = document.getElementById("favoritesPrev");
 const favoritesNext = document.getElementById("favoritesNext");
@@ -273,7 +269,8 @@ const addTeacherModal = document.getElementById("addTeacherModal");
 const teacherInfoModal = document.getElementById("teacherInfoModal");
 const searchInput = document.querySelector(".search-form__input");
 const searchForm = document.querySelector(".search-form");
-const paginationNav = document.querySelector(".pagination");
+const teacherSort = document.getElementById("teacherSort");
+const teacherSortOrder = document.getElementById("teacherSortOrder");
 
 // Filter Selectors
 const filterAge = document.getElementById("filter-age");
@@ -416,55 +413,6 @@ function renderFavorites() {
     updateCarouselButtons();
 }
 
-// Render Statistics Table
-function renderStatsTable() {
-    if (!statsTableBody) return;
-    statsTableBody.innerHTML = "";
-
-    const totalPages = Math.max(1, Math.ceil(displayedUsers.length / ROWS_PER_PAGE));
-    if (currentPage > totalPages) currentPage = totalPages;
-    const start = (currentPage - 1) * ROWS_PER_PAGE;
-    const pageUsers = displayedUsers.slice(start, start + ROWS_PER_PAGE);
-    if (!pageUsers.length) {
-        statsTableBody.innerHTML = '<tr><td colspan="6">No teachers found.</td></tr>';
-    }
-    document.getElementById("statsSummary").textContent = `${displayedUsers.length} teachers (${getPercentageByCondition(allUsers, (user) => displayedUsers.includes(user))}% of all teachers)`;
-
-    pageUsers.forEach((user) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${escapeHTML(user.full_name)}</td>
-            <td>${escapeHTML(user.course || "—")}</td>
-            <td>${user.age ?? "—"}</td>
-            <td>${escapeHTML(user.b_date?.slice(0, 10) || "—")}</td>
-            <td>${escapeHTML(user.gender || "—")}</td>
-            <td>${escapeHTML(user.country || "—")}</td>
-        `;
-        tr.style.cursor = "pointer";
-        tr.dataset.userIndex = allUsers.indexOf(user);
-        statsTableBody.appendChild(tr);
-    });
-
-    renderPagination(totalPages);
-}
-
-// Render Pagination Links
-function renderPagination(totalPages) {
-    if (!paginationNav) return;
-    paginationNav.innerHTML = "";
-    if (totalPages <= 1) return;
-
-    for (let i = 1; i <= totalPages; i++) {
-        const a = document.createElement("a");
-        a.href = "#statistics";
-        a.className = "pagination__link";
-        a.textContent = String(i);
-        if (i === currentPage) a.style.fontWeight = "bold";
-        a.dataset.page = i;
-        paginationNav.appendChild(a);
-    }
-}
-
 // Fill the country list.
 function renderCountryFilter() {
     const selectedCountry = filterCountry.value;
@@ -511,12 +459,11 @@ function applyFilters() {
 
     const query = searchInput?.value.trim();
     if (query) filtered = filtered.filter((user) => findUser([user], query));
-    if (sortField) filtered = sortUsers(filtered, sortField, sortOrder);
+    if (teacherSort.value) filtered = sortUsers(filtered, teacherSort.value, teacherSortOrder.value);
 
     displayedUsers = filtered;
-    currentPage = 1;
     renderTeachersGrid();
-    renderStatsTable();
+    renderStatisticsChart(displayedUsers, allUsers);
 }
 
 // Handle all filter changes.
@@ -547,7 +494,7 @@ document.addEventListener("click", (e) => {
         return;
     }
 
-    const teacher = target.closest(".teacher-card[data-user-index], tr[data-user-index]");
+    const teacher = target.closest(".teacher-card[data-user-index]");
     if (teacher) {
         openTeacherInfo(allUsers[Number(teacher.dataset.userIndex)]);
         return;
@@ -561,27 +508,7 @@ document.addEventListener("click", (e) => {
         return;
     }
 
-    const pageLink = target.closest(".pagination__link");
-    if (pageLink) {
-        e.preventDefault();
-        currentPage = Number(pageLink.dataset.page);
-        renderStatsTable();
-        return;
-    }
 
-    const header = target.closest(".stats-table th[data-sort]");
-    if (header) {
-        const field = header.dataset.sort;
-        sortOrder = sortField === field && sortOrder === "asc" ? "desc" : "asc";
-        sortField = field;
-        document.querySelectorAll(".stats-table th[data-sort]").forEach((item) => {
-            const active = item === header;
-            item.classList.toggle("is-sorted", active);
-            item.setAttribute("aria-sort", active ? (sortOrder === "asc" ? "ascending" : "descending") : "none");
-            item.querySelector(".sort-arrow").textContent = active ? (sortOrder === "asc" ? "↑" : "↓") : "";
-        });
-        applyFilters();
-    }
 });
 
 // Open Teacher Details Modal
@@ -783,6 +710,6 @@ async function loadUsers(initial = false) {
 }
 
 retryLoad.addEventListener("click", () => loadUsers(!initialLoaded));
-renderStatsTable();
+renderStatisticsChart(displayedUsers, allUsers);
 renderFavorites();
 loadUsers(true);
