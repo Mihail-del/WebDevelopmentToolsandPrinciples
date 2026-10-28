@@ -1,4 +1,5 @@
 import { fetchUsers, saveTeacher } from "./api.js";
+import { showTeacherMap, removeTeacherMap } from "./teacher-map.js";
 
 const COURSES = [
     "Mathematics",
@@ -601,6 +602,7 @@ function openTeacherInfo(user) {
             </div>`;
     }
 
+    removeTeacherMap();
     teacherInfoBody.innerHTML = `
         ${photoHTML}
         <div class="info-card__header">
@@ -619,13 +621,16 @@ function openTeacherInfo(user) {
         <div class="info-card__desc">
             ${user.note ? `<p>${escapeHTML(user.note)}</p>` : "<p>No additional notes.</p>"}
         </div>
+        <div class="teacher-map" id="teacherMap" aria-label="Teacher location"></div>
     `;
 
     teacherInfoBody.dataset.userIndex = allUsers.indexOf(user);
     teacherInfoModal.classList.add("is-active");
+    showTeacherMap(user.coordinates);
 }
 
 function closeModals() {
+    removeTeacherMap();
     addTeacherModal?.classList.remove("is-active");
     teacherInfoModal?.classList.remove("is-active");
 }

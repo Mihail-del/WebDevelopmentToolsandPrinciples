@@ -755,3 +755,12 @@ body {
         scroll-behavior: auto;
     }
 }
+
+/* Teacher location inside the details popup. */
+.teacher-map {
+    clear: both;
+    height: 260px;
+    margin-top: 16px;
+    border-radius: 6px;
+    background: #f5f5f5;
+}
