@@ -2,12 +2,7 @@
 let countryChart = null;
 
 export function countByCountry(users) {
-    const counts = {};
-    users.forEach((user) => {
-        const country = user.country || "Unknown";
-        counts[country] = (counts[country] || 0) + 1;
-    });
-    return counts;
+    return _.countBy(users, (user) => user.country || "Unknown");
 }
 
 export function renderStatisticsChart(users, allUsers) {

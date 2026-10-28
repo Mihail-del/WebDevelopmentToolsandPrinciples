@@ -2,250 +2,15 @@ import { fetchUsers, saveTeacher } from "./api.js";
 import { showTeacherMap, removeTeacherMap } from "./teacher-map.js";
 import { renderStatisticsChart } from "./statistics-chart.js";
 
-const COURSES = [
-    "Mathematics",
-    "Physics",
-    "English",
-    "Computer Science",
-    "Dancing",
-    "Chess",
-    "Biology",
-    "Chemistry",
-    "Law",
-    "Art",
-    "Medicine",
-    "Statistics",
-];
+import {
+    formatAndMergeUsers, getAge, getUserErrors, filterUsers, sortUsers,
+    findUser,
+} from "./teacher-data.js";
 
-const getRandomCourse = () => {
-    const randomIndex = Math.floor(Math.random() * COURSES.length);
-    return COURSES[randomIndex];
-};
-
-function getAge(birthDate) {
-    if (!birthDate) return null;
-    const birth = new Date(birthDate);
-    if (Number.isNaN(birth.getTime())) return null;
-    const today = new Date();
-    let age = today.getFullYear() - birth.getFullYear();
-    if (today.getMonth() < birth.getMonth() ||
-        (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) {
-        age--;
-    }
-    return age;
-}
-
-// Merge users
-export function formatAndMergeUsers(rawUsers = [], extraUsers = []) {
-    const formattedRawUsers = rawUsers.map((user) => {
-        return {
-            gender: user.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : null,
-            title: user.name?.title || null,
-            full_name: `${user.name?.first || ""} ${user.name?.last || ""}`.trim(),
-            city: user.location?.city || null,
-            state: user.location?.state || null,
-            country: user.location?.country || null,
-            postcode: user.location?.postcode ?? null,
-            coordinates: user.location?.coordinates || null,
-            timezone: user.location?.timezone || null,
-            email: user.email || null,
-            b_date: user.dob?.date || null,
-            age: user.dob?.age ?? getAge(user.dob?.date),
-            phone: user.phone || null,
-            picture_large: user.picture?.large || null,
-            picture_thumbnail: user.picture?.thumbnail || null,
-
-            id: user.login?.uuid || ((user.id?.name && user.id?.value)
-                ? `${user.id.name}${user.id.value}`
-                : `user-${crypto.randomUUID()}`),
-            favorite: false,
-            course: getRandomCourse(),
-            bg_color: "#ffffff",
-            note: null,
-        };
-    });
-
-    const normalizedExtraUsers = extraUsers.map((user) => {
-        return {
-            gender: user.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : null,
-            title: user.title || null,
-            full_name: user.full_name || "",
-            city: user.city || null,
-            state: user.state || null,
-            country: user.country || null,
-            postcode: user.postcode ?? null,
-            coordinates: user.coordinates || null,
-            timezone: user.timezone || null,
-            email: user.email || null,
-            b_date: user.b_day || user.b_date || null,
-            age: user.age ?? getAge(user.b_day || user.b_date),
-            phone: user.phone || null,
-            picture_large: user.picture_large || null,
-            picture_thumbnail: user.picture_thumbnail || null,
-
-            id: user.id || `user-${Math.random()}`,
-            favorite: user.favorite ?? false,
-            course: COURSES.find((course) => course.toLowerCase() === user.course?.toLowerCase()) || getRandomCourse(),
-            bg_color: user.bg_color || "#ffffff",
-            note: user.note || null,
-        };
-    });
-
-    const userMap = new Map();
-
-    [...formattedRawUsers, ...normalizedExtraUsers].forEach((user) => {
-        const key = user.id;
-
-        if (!userMap.has(key)) {
-            userMap.set(key, { ...user });
-        } else {
-            const existing = userMap.get(key);
-            userMap.set(key, {
-                ...existing,
-                city: user.city || existing.city,
-                state: user.state || existing.state,
-                country: user.country || existing.country,
-                email: user.email || existing.email,
-                phone: user.phone || existing.phone,
-                b_date: user.b_date || existing.b_date,
-                age: user.age ?? existing.age,
-                picture_large: user.picture_large || existing.picture_large,
-                picture_thumbnail: user.picture_thumbnail || existing.picture_thumbnail,
-                note: user.note || existing.note,
-                favorite: existing.favorite || user.favorite,
-                course: existing.course || user.course,
-                bg_color: user.bg_color || existing.bg_color,
-            });
-        }
-    });
-
-    return Array.from(userMap.values());
-}
-
-// Get errors for each field.
-function getUserErrors(user) {
-    const errors = {};
-    const textFields = ["full_name", "gender", "note", "state", "city", "country"];
-
-    textFields.forEach((field) => {
-        const value = user[field];
-        if (typeof value !== "string" || !value.trim()) {
-            errors[field] = "This field is required.";
-        } else if (!/^\p{Lu}/u.test(value.trim())) {
-            errors[field] = "Start with a capital letter.";
-        }
-    });
-
-    if (typeof user.age !== "number" || !Number.isFinite(user.age) || user.age < 0) {
-        errors.age = "Enter a valid birth date that is not in the future.";
-    }
-    if (typeof user.email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) {
-        errors.email = "Enter a valid email, for example name@example.com.";
-    }
-
-    const phoneFormats = {
-        Ukraine: /^(?:\+380\d{9}|0\d{9})$/,
-        "United States": /^(?:\+?1)?\d{10}$/,
-        Canada: /^(?:\+?1)?\d{10}$/,
-        Germany: /^(?:\+49\d{7,13}|0\d{7,13})$/,
-        France: /^(?:\+33\d{9}|0\d{9})$/,
-        Norway: /^(?:\+47)?\d{8}$/,
-        Finland: /^(?:\+358\d{5,12}|0\d{5,12})$/,
-        Denmark: /^(?:\+45)?\d{8}$/,
-        Ireland: /^(?:\+353\d{7,9}|0\d{7,9})$/,
-        Spain: /^(?:\+34)?\d{9}$/,
-    };
-    const phoneFormat = phoneFormats[user.country] || /^\+?\d{7,15}$/;
-    const phone = typeof user.phone === "string" ? user.phone.replace(/[\s()-]/g, "") : "";
-    if (typeof user.phone !== "string" || !/^\+?[\d\s()-]+$/.test(user.phone) || !phoneFormat.test(phone)) {
-        errors.phone = `Enter a valid phone number for ${user.country || "the selected country"}.`;
-    }
-
-    return errors;
-}
-
-// Check user fields.
-export function validateUser(user) {
-    return !!user && typeof user === "object" && Object.keys(getUserErrors(user)).length === 0;
-}
-
-// Filter users
-export function filterUsers(users, filters = {}) {
-    return users.filter((user) => {
-        if (filters.country && user.country?.toLowerCase() !== filters.country.toLowerCase()) {
-            return false;
-        }
-        if (filters.age !== undefined && user.age !== filters.age) {
-            return false;
-        }
-        if (filters.gender && user.gender?.toLowerCase() !== filters.gender.toLowerCase()) {
-            return false;
-        }
-        if (filters.favorite !== undefined && user.favorite !== filters.favorite) {
-            return false;
-        }
-        return true;
-    });
-}
-
-// Sort users
-export function sortUsers(users, sortBy, order = "asc") {
-    const multiplier = order.toLowerCase() === "desc" ? -1 : 1;
-
-    return [...users].sort((a, b) => {
-        const field = sortBy === "b_day" ? "b_date" : sortBy;
-        const valA = a[field] ?? (field === "b_date" ? a.b_day : null);
-        const valB = b[field] ?? (field === "b_date" ? b.b_day : null);
-
-        if (valA === valB) return 0;
-        if (valA === null || valA === undefined) return 1;
-        if (valB === null || valB === undefined) return -1;
-
-        if (sortBy === "b_date" || sortBy === "b_day") {
-            return (new Date(valA).getTime() - new Date(valB).getTime()) * multiplier;
-        }
-
-        if (typeof valA === "number" && typeof valB === "number") {
-            return (valA - valB) * multiplier;
-        }
-
-        return String(valA).localeCompare(String(valB)) * multiplier;
-    });
-}
-
-// Find a user
-export function findUser(users, query) {
-    if (query === undefined || query === null) return null;
-
-    const normalizedQuery = String(query).trim().toLowerCase();
-    if (!normalizedQuery) return null;
-
-    return (
-        users.find((user) => {
-            if (typeof query === "number" && user.age === query) return true;
-            if (user.full_name && user.full_name.toLowerCase().includes(normalizedQuery)) return true;
-            if (user.note && user.note.toLowerCase().includes(normalizedQuery)) return true;
-            if (String(user.age) === normalizedQuery) return true;
-            return false;
-        }) || null
-    );
-}
-
-// Count matching users
-export function getPercentageByCondition(users, predicate) {
-    if (!Array.isArray(users) || users.length === 0) return 0;
-
-    let matchingCount = 0;
-
-    if (typeof predicate === "function") {
-        matchingCount = users.filter(predicate).length;
-    } else if (predicate !== undefined && predicate !== null) {
-        matchingCount = users.filter((user) => findUser([user], predicate)).length;
-    }
-
-    const percentage = (matchingCount / users.length) * 100;
-    return Number(percentage.toFixed(2));
-}
+export {
+    formatAndMergeUsers, validateUser, filterUsers, sortUsers,
+    findUser, getPercentageByCondition,
+} from "./teacher-data.js";
 
 // Page content
 
@@ -370,7 +135,7 @@ function renderFavorites() {
     if (!favoritesContainer) return;
     favoritesContainer.innerHTML = "";
 
-    const favorites = allUsers.filter((u) => u.favorite);
+    const favorites = _.filter(allUsers, (u) => u.favorite);
 
     if (favorites.length === 0) {
         favoritesContainer.innerHTML = '<p class="empty-message">No favorite teachers yet.</p>';
@@ -416,8 +181,7 @@ function renderFavorites() {
 // Fill the country list.
 function renderCountryFilter() {
     const selectedCountry = filterCountry.value;
-    const countries = [...new Set(allUsers.map((user) => user.country).filter(Boolean))];
-    countries.sort((a, b) => a.localeCompare(b));
+    const countries = _.sortBy(_.uniq(_.compact(_.map(allUsers, "country"))));
     filterCountry.innerHTML = '<option value="all">All</option>';
 
     countries.forEach((country) => {
@@ -447,18 +211,18 @@ function applyFilters() {
     // Filter by Age
     if (filterAge) {
         const ageVal = filterAge.value;
-        if (ageVal === "18-31") filtered = filtered.filter((u) => u.age >= 18 && u.age <= 31);
-        else if (ageVal === "32-45") filtered = filtered.filter((u) => u.age >= 32 && u.age <= 45);
-        else if (ageVal === "46+") filtered = filtered.filter((u) => u.age >= 46);
+        if (ageVal === "18-31") filtered = _.filter(filtered, (u) => u.age >= 18 && u.age <= 31);
+        else if (ageVal === "32-45") filtered = _.filter(filtered, (u) => u.age >= 32 && u.age <= 45);
+        else if (ageVal === "46+") filtered = _.filter(filtered, (u) => u.age >= 46);
     }
 
     // Filter by Photo availability
     if (filterPhoto && filterPhoto.checked) {
-        filtered = filtered.filter((u) => u.picture_large || u.picture_thumbnail);
+        filtered = _.filter(filtered, (u) => u.picture_large || u.picture_thumbnail);
     }
 
     const query = searchInput?.value.trim();
-    if (query) filtered = filtered.filter((user) => findUser([user], query));
+    if (query) filtered = _.filter(filtered, (user) => findUser([user], query));
     if (teacherSort.value) filtered = sortUsers(filtered, teacherSort.value, teacherSortOrder.value);
 
     displayedUsers = filtered;
@@ -690,9 +454,8 @@ async function loadUsers(initial = false) {
     teachersGrid.setAttribute("aria-busy", "true");
     try {
         const data = await fetchUsers(initial ? 50 : 10, initial ? 1 : nextPage, requestSeed);
-        const existingIds = new Set(allUsers.map((user) => user.id));
         const newUsers = formatAndMergeUsers(data.results);
-        allUsers.push(...newUsers.filter((user) => !existingIds.has(user.id)));
+        allUsers = _.unionBy(allUsers, newUsers, "id");
         initialLoaded = true;
         nextPage = initial ? 6 : nextPage + 1;
         refreshUsers();
