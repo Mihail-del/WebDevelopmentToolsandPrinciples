@@ -1,269 +1,33 @@
 import { fetchUsers, saveTeacher } from "./api.js";
+import { showTeacherMap, removeTeacherMap } from "./teacher-map.js";
+import { renderStatisticsChart } from "./statistics-chart.js";
+import { getDaysUntilBirthday } from "./birthday.js";
+import { renderTeacherReport } from "./teacher-reports.js";
 
-const COURSES = [
-    "Mathematics",
-    "Physics",
-    "English",
-    "Computer Science",
-    "Dancing",
-    "Chess",
-    "Biology",
-    "Chemistry",
-    "Law",
-    "Art",
-    "Medicine",
-    "Statistics",
-];
+import {
+    formatAndMergeUsers, getAge, getUserErrors, filterUsers, sortUsers,
+    findUser,
+} from "./teacher-data.js";
 
-const getRandomCourse = () => {
-    const randomIndex = Math.floor(Math.random() * COURSES.length);
-    return COURSES[randomIndex];
-};
-
-function getAge(birthDate) {
-    if (!birthDate) return null;
-    const birth = new Date(birthDate);
-    if (Number.isNaN(birth.getTime())) return null;
-    const today = new Date();
-    let age = today.getFullYear() - birth.getFullYear();
-    if (today.getMonth() < birth.getMonth() ||
-        (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) {
-        age--;
-    }
-    return age;
-}
-
-// Merge users
-export function formatAndMergeUsers(rawUsers = [], extraUsers = []) {
-    const formattedRawUsers = rawUsers.map((user) => {
-        return {
-            gender: user.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : null,
-            title: user.name?.title || null,
-            full_name: `${user.name?.first || ""} ${user.name?.last || ""}`.trim(),
-            city: user.location?.city || null,
-            state: user.location?.state || null,
-            country: user.location?.country || null,
-            postcode: user.location?.postcode ?? null,
-            coordinates: user.location?.coordinates || null,
-            timezone: user.location?.timezone || null,
-            email: user.email || null,
-            b_date: user.dob?.date || null,
-            age: user.dob?.age ?? getAge(user.dob?.date),
-            phone: user.phone || null,
-            picture_large: user.picture?.large || null,
-            picture_thumbnail: user.picture?.thumbnail || null,
-
-            id: user.login?.uuid || ((user.id?.name && user.id?.value)
-                ? `${user.id.name}${user.id.value}`
-                : `user-${crypto.randomUUID()}`),
-            favorite: false,
-            course: getRandomCourse(),
-            bg_color: "#ffffff",
-            note: null,
-        };
-    });
-
-    const normalizedExtraUsers = extraUsers.map((user) => {
-        return {
-            gender: user.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : null,
-            title: user.title || null,
-            full_name: user.full_name || "",
-            city: user.city || null,
-            state: user.state || null,
-            country: user.country || null,
-            postcode: user.postcode ?? null,
-            coordinates: user.coordinates || null,
-            timezone: user.timezone || null,
-            email: user.email || null,
-            b_date: user.b_day || user.b_date || null,
-            age: user.age ?? getAge(user.b_day || user.b_date),
-            phone: user.phone || null,
-            picture_large: user.picture_large || null,
-            picture_thumbnail: user.picture_thumbnail || null,
-
-            id: user.id || `user-${Math.random()}`,
-            favorite: user.favorite ?? false,
-            course: COURSES.find((course) => course.toLowerCase() === user.course?.toLowerCase()) || getRandomCourse(),
-            bg_color: user.bg_color || "#ffffff",
-            note: user.note || null,
-        };
-    });
-
-    const userMap = new Map();
-
-    [...formattedRawUsers, ...normalizedExtraUsers].forEach((user) => {
-        const key = user.id;
-
-        if (!userMap.has(key)) {
-            userMap.set(key, { ...user });
-        } else {
-            const existing = userMap.get(key);
-            userMap.set(key, {
-                ...existing,
-                city: user.city || existing.city,
-                state: user.state || existing.state,
-                country: user.country || existing.country,
-                email: user.email || existing.email,
-                phone: user.phone || existing.phone,
-                b_date: user.b_date || existing.b_date,
-                age: user.age ?? existing.age,
-                picture_large: user.picture_large || existing.picture_large,
-                picture_thumbnail: user.picture_thumbnail || existing.picture_thumbnail,
-                note: user.note || existing.note,
-                favorite: existing.favorite || user.favorite,
-                course: existing.course || user.course,
-                bg_color: user.bg_color || existing.bg_color,
-            });
-        }
-    });
-
-    return Array.from(userMap.values());
-}
-
-// Get errors for each field.
-function getUserErrors(user) {
-    const errors = {};
-    const textFields = ["full_name", "gender", "note", "state", "city", "country"];
-
-    textFields.forEach((field) => {
-        const value = user[field];
-        if (typeof value !== "string" || !value.trim()) {
-            errors[field] = "This field is required.";
-        } else if (!/^\p{Lu}/u.test(value.trim())) {
-            errors[field] = "Start with a capital letter.";
-        }
-    });
-
-    if (typeof user.age !== "number" || !Number.isFinite(user.age) || user.age < 0) {
-        errors.age = "Enter a valid birth date that is not in the future.";
-    }
-    if (typeof user.email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) {
-        errors.email = "Enter a valid email, for example name@example.com.";
-    }
-
-    const phoneFormats = {
-        Ukraine: /^(?:\+380\d{9}|0\d{9})$/,
-        "United States": /^(?:\+?1)?\d{10}$/,
-        Canada: /^(?:\+?1)?\d{10}$/,
-        Germany: /^(?:\+49\d{7,13}|0\d{7,13})$/,
-        France: /^(?:\+33\d{9}|0\d{9})$/,
-        Norway: /^(?:\+47)?\d{8}$/,
-        Finland: /^(?:\+358\d{5,12}|0\d{5,12})$/,
-        Denmark: /^(?:\+45)?\d{8}$/,
-        Ireland: /^(?:\+353\d{7,9}|0\d{7,9})$/,
-        Spain: /^(?:\+34)?\d{9}$/,
-    };
-    const phoneFormat = phoneFormats[user.country] || /^\+?\d{7,15}$/;
-    const phone = typeof user.phone === "string" ? user.phone.replace(/[\s()-]/g, "") : "";
-    if (typeof user.phone !== "string" || !/^\+?[\d\s()-]+$/.test(user.phone) || !phoneFormat.test(phone)) {
-        errors.phone = `Enter a valid phone number for ${user.country || "the selected country"}.`;
-    }
-
-    return errors;
-}
-
-// Check user fields.
-export function validateUser(user) {
-    return !!user && typeof user === "object" && Object.keys(getUserErrors(user)).length === 0;
-}
-
-// Filter users
-export function filterUsers(users, filters = {}) {
-    return users.filter((user) => {
-        if (filters.country && user.country?.toLowerCase() !== filters.country.toLowerCase()) {
-            return false;
-        }
-        if (filters.age !== undefined && user.age !== filters.age) {
-            return false;
-        }
-        if (filters.gender && user.gender?.toLowerCase() !== filters.gender.toLowerCase()) {
-            return false;
-        }
-        if (filters.favorite !== undefined && user.favorite !== filters.favorite) {
-            return false;
-        }
-        return true;
-    });
-}
-
-// Sort users
-export function sortUsers(users, sortBy, order = "asc") {
-    const multiplier = order.toLowerCase() === "desc" ? -1 : 1;
-
-    return [...users].sort((a, b) => {
-        const field = sortBy === "b_day" ? "b_date" : sortBy;
-        const valA = a[field] ?? (field === "b_date" ? a.b_day : null);
-        const valB = b[field] ?? (field === "b_date" ? b.b_day : null);
-
-        if (valA === valB) return 0;
-        if (valA === null || valA === undefined) return 1;
-        if (valB === null || valB === undefined) return -1;
-
-        if (sortBy === "b_date" || sortBy === "b_day") {
-            return (new Date(valA).getTime() - new Date(valB).getTime()) * multiplier;
-        }
-
-        if (typeof valA === "number" && typeof valB === "number") {
-            return (valA - valB) * multiplier;
-        }
-
-        return String(valA).localeCompare(String(valB)) * multiplier;
-    });
-}
-
-// Find a user
-export function findUser(users, query) {
-    if (query === undefined || query === null) return null;
-
-    const normalizedQuery = String(query).trim().toLowerCase();
-    if (!normalizedQuery) return null;
-
-    return (
-        users.find((user) => {
-            if (typeof query === "number" && user.age === query) return true;
-            if (user.full_name && user.full_name.toLowerCase().includes(normalizedQuery)) return true;
-            if (user.note && user.note.toLowerCase().includes(normalizedQuery)) return true;
-            if (String(user.age) === normalizedQuery) return true;
-            return false;
-        }) || null
-    );
-}
-
-// Count matching users
-export function getPercentageByCondition(users, predicate) {
-    if (!Array.isArray(users) || users.length === 0) return 0;
-
-    let matchingCount = 0;
-
-    if (typeof predicate === "function") {
-        matchingCount = users.filter(predicate).length;
-    } else if (predicate !== undefined && predicate !== null) {
-        matchingCount = users.filter((user) => findUser([user], predicate)).length;
-    }
-
-    const percentage = (matchingCount / users.length) * 100;
-    return Number(percentage.toFixed(2));
-}
+export {
+    formatAndMergeUsers, validateUser, filterUsers, sortUsers,
+    findUser, getPercentageByCondition,
+} from "./teacher-data.js";
 
 // Page content
 
 let allUsers = [];
 let displayedUsers = [...allUsers];
-const ROWS_PER_PAGE = 10;
-let currentPage = 1;
 const requestSeed = crypto.randomUUID();
 let nextPage = 6; // The first 50 users cover five pages of 10.
 let initialLoaded = false;
 let isLoadingUsers = false;
-let sortField = "";
-let sortOrder = "asc";
 
 // DOM Selectors
 const teachersGrid = document.getElementById("teachersGrid");
 const showMoreTeachers = document.getElementById("showMoreTeachers");
 const loadStatus = document.getElementById("loadStatus");
 const retryLoad = document.getElementById("retryLoad");
-const statsTableBody = document.getElementById("statsTableBody");
 const favoritesContainer = document.getElementById("favoritesTrack");
 const favoritesPrev = document.getElementById("favoritesPrev");
 const favoritesNext = document.getElementById("favoritesNext");
@@ -272,7 +36,9 @@ const addTeacherModal = document.getElementById("addTeacherModal");
 const teacherInfoModal = document.getElementById("teacherInfoModal");
 const searchInput = document.querySelector(".search-form__input");
 const searchForm = document.querySelector(".search-form");
-const paginationNav = document.querySelector(".pagination");
+const teacherSort = document.getElementById("teacherSort");
+const teacherSortOrder = document.getElementById("teacherSortOrder");
+const statisticsView = document.getElementById("statisticsView");
 
 // Filter Selectors
 const filterAge = document.getElementById("filter-age");
@@ -372,7 +138,7 @@ function renderFavorites() {
     if (!favoritesContainer) return;
     favoritesContainer.innerHTML = "";
 
-    const favorites = allUsers.filter((u) => u.favorite);
+    const favorites = _.filter(allUsers, (u) => u.favorite);
 
     if (favorites.length === 0) {
         favoritesContainer.innerHTML = '<p class="empty-message">No favorite teachers yet.</p>';
@@ -415,60 +181,10 @@ function renderFavorites() {
     updateCarouselButtons();
 }
 
-// Render Statistics Table
-function renderStatsTable() {
-    if (!statsTableBody) return;
-    statsTableBody.innerHTML = "";
-
-    const totalPages = Math.max(1, Math.ceil(displayedUsers.length / ROWS_PER_PAGE));
-    if (currentPage > totalPages) currentPage = totalPages;
-    const start = (currentPage - 1) * ROWS_PER_PAGE;
-    const pageUsers = displayedUsers.slice(start, start + ROWS_PER_PAGE);
-    if (!pageUsers.length) {
-        statsTableBody.innerHTML = '<tr><td colspan="6">No teachers found.</td></tr>';
-    }
-    document.getElementById("statsSummary").textContent = `${displayedUsers.length} teachers (${getPercentageByCondition(allUsers, (user) => displayedUsers.includes(user))}% of all teachers)`;
-
-    pageUsers.forEach((user) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${escapeHTML(user.full_name)}</td>
-            <td>${escapeHTML(user.course || "—")}</td>
-            <td>${user.age ?? "—"}</td>
-            <td>${escapeHTML(user.b_date?.slice(0, 10) || "—")}</td>
-            <td>${escapeHTML(user.gender || "—")}</td>
-            <td>${escapeHTML(user.country || "—")}</td>
-        `;
-        tr.style.cursor = "pointer";
-        tr.dataset.userIndex = allUsers.indexOf(user);
-        statsTableBody.appendChild(tr);
-    });
-
-    renderPagination(totalPages);
-}
-
-// Render Pagination Links
-function renderPagination(totalPages) {
-    if (!paginationNav) return;
-    paginationNav.innerHTML = "";
-    if (totalPages <= 1) return;
-
-    for (let i = 1; i <= totalPages; i++) {
-        const a = document.createElement("a");
-        a.href = "#statistics";
-        a.className = "pagination__link";
-        a.textContent = String(i);
-        if (i === currentPage) a.style.fontWeight = "bold";
-        a.dataset.page = i;
-        paginationNav.appendChild(a);
-    }
-}
-
 // Fill the country list.
 function renderCountryFilter() {
     const selectedCountry = filterCountry.value;
-    const countries = [...new Set(allUsers.map((user) => user.country).filter(Boolean))];
-    countries.sort((a, b) => a.localeCompare(b));
+    const countries = _.sortBy(_.uniq(_.compact(_.map(allUsers, "country"))));
     filterCountry.innerHTML = '<option value="all">All</option>';
 
     countries.forEach((country) => {
@@ -480,11 +196,22 @@ function renderCountryFilter() {
     filterCountry.value = countries.includes(selectedCountry) ? selectedCountry : "all";
 }
 
+// Switch between the filtered diagram and reports for all loaded teachers.
+function renderStatisticsView() {
+    const isChart = statisticsView.value === "chart";
+    document.getElementById("chartPanel").hidden = !isChart;
+    document.getElementById("reportPanel").hidden = isChart;
+    if (!isChart) renderTeacherReport(allUsers, statisticsView.value);
+}
+
+statisticsView.addEventListener("change", renderStatisticsView);
+
 // Refresh every section from the same source list.
 function refreshUsers() {
     renderCountryFilter();
     applyFilters();
     renderFavorites();
+    renderStatisticsView();
 }
 
 // Apply Filters to the Displayed List
@@ -498,24 +225,23 @@ function applyFilters() {
     // Filter by Age
     if (filterAge) {
         const ageVal = filterAge.value;
-        if (ageVal === "18-31") filtered = filtered.filter((u) => u.age >= 18 && u.age <= 31);
-        else if (ageVal === "32-45") filtered = filtered.filter((u) => u.age >= 32 && u.age <= 45);
-        else if (ageVal === "46+") filtered = filtered.filter((u) => u.age >= 46);
+        if (ageVal === "18-31") filtered = _.filter(filtered, (u) => u.age >= 18 && u.age <= 31);
+        else if (ageVal === "32-45") filtered = _.filter(filtered, (u) => u.age >= 32 && u.age <= 45);
+        else if (ageVal === "46+") filtered = _.filter(filtered, (u) => u.age >= 46);
     }
 
     // Filter by Photo availability
     if (filterPhoto && filterPhoto.checked) {
-        filtered = filtered.filter((u) => u.picture_large || u.picture_thumbnail);
+        filtered = _.filter(filtered, (u) => u.picture_large || u.picture_thumbnail);
     }
 
     const query = searchInput?.value.trim();
-    if (query) filtered = filtered.filter((user) => findUser([user], query));
-    if (sortField) filtered = sortUsers(filtered, sortField, sortOrder);
+    if (query) filtered = _.filter(filtered, (user) => findUser([user], query));
+    if (teacherSort.value) filtered = sortUsers(filtered, teacherSort.value, teacherSortOrder.value);
 
     displayedUsers = filtered;
-    currentPage = 1;
     renderTeachersGrid();
-    renderStatsTable();
+    renderStatisticsChart(displayedUsers, allUsers);
 }
 
 // Handle all filter changes.
@@ -543,10 +269,11 @@ document.addEventListener("click", (e) => {
         favBtn.setAttribute("aria-pressed", String(user.favorite));
         applyFilters();
         renderFavorites();
+        renderStatisticsView();
         return;
     }
 
-    const teacher = target.closest(".teacher-card[data-user-index], tr[data-user-index]");
+    const teacher = target.closest(".teacher-card[data-user-index]");
     if (teacher) {
         openTeacherInfo(allUsers[Number(teacher.dataset.userIndex)]);
         return;
@@ -560,27 +287,7 @@ document.addEventListener("click", (e) => {
         return;
     }
 
-    const pageLink = target.closest(".pagination__link");
-    if (pageLink) {
-        e.preventDefault();
-        currentPage = Number(pageLink.dataset.page);
-        renderStatsTable();
-        return;
-    }
 
-    const header = target.closest(".stats-table th[data-sort]");
-    if (header) {
-        const field = header.dataset.sort;
-        sortOrder = sortField === field && sortOrder === "asc" ? "desc" : "asc";
-        sortField = field;
-        document.querySelectorAll(".stats-table th[data-sort]").forEach((item) => {
-            const active = item === header;
-            item.classList.toggle("is-sorted", active);
-            item.setAttribute("aria-sort", active ? (sortOrder === "asc" ? "ascending" : "descending") : "none");
-            item.querySelector(".sort-arrow").textContent = active ? (sortOrder === "asc" ? "↑" : "↓") : "";
-        });
-        applyFilters();
-    }
 });
 
 // Open Teacher Details Modal
@@ -601,6 +308,12 @@ function openTeacherInfo(user) {
             </div>`;
     }
 
+    const birthdayDays = getDaysUntilBirthday(user.b_date);
+    const birthdayMessage = birthdayDays === null ? "Birthday is not available." :
+        birthdayDays === 0 ? "Birthday is today!" :
+        `${birthdayDays} ${birthdayDays === 1 ? "day" : "days"} until next birthday.`;
+
+    removeTeacherMap();
     teacherInfoBody.innerHTML = `
         ${photoHTML}
         <div class="info-card__header">
@@ -613,19 +326,23 @@ function openTeacherInfo(user) {
             <h4 class="info-card__subject">${escapeHTML(user.course)}</h4>
             <p class="info-card__meta">${escapeHTML([user.city, user.country].filter(Boolean).join(", ") || "—")}</p>
             <p class="info-card__meta">${user.age ?? "—"}, ${escapeHTML(user.gender || "—")}</p>
+            <p class="info-card__meta" id="birthdayCountdown">${birthdayMessage}</p>
             ${user.email ? `<p class="info-card__meta"><a href="mailto:${escapeHTML(user.email)}" class="info-card__link">${escapeHTML(user.email)}</a></p>` : ""}
             ${user.phone ? `<p class="info-card__meta">${escapeHTML(user.phone)}</p>` : ""}
         </div>
         <div class="info-card__desc">
             ${user.note ? `<p>${escapeHTML(user.note)}</p>` : "<p>No additional notes.</p>"}
         </div>
+        <div class="teacher-map" id="teacherMap" aria-label="Teacher location"></div>
     `;
 
     teacherInfoBody.dataset.userIndex = allUsers.indexOf(user);
     teacherInfoModal.classList.add("is-active");
+    showTeacherMap(user.coordinates);
 }
 
 function closeModals() {
+    removeTeacherMap();
     addTeacherModal?.classList.remove("is-active");
     teacherInfoModal?.classList.remove("is-active");
 }
@@ -758,9 +475,8 @@ async function loadUsers(initial = false) {
     teachersGrid.setAttribute("aria-busy", "true");
     try {
         const data = await fetchUsers(initial ? 50 : 10, initial ? 1 : nextPage, requestSeed);
-        const existingIds = new Set(allUsers.map((user) => user.id));
         const newUsers = formatAndMergeUsers(data.results);
-        allUsers.push(...newUsers.filter((user) => !existingIds.has(user.id)));
+        allUsers = _.unionBy(allUsers, newUsers, "id");
         initialLoaded = true;
         nextPage = initial ? 6 : nextPage + 1;
         refreshUsers();
@@ -778,6 +494,6 @@ async function loadUsers(initial = false) {
 }
 
 retryLoad.addEventListener("click", () => loadUsers(!initialLoaded));
-renderStatsTable();
+renderStatisticsChart(displayedUsers, allUsers);
 renderFavorites();
 loadUsers(true);

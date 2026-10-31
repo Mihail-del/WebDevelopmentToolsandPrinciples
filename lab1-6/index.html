@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teachinder - Find Your Teacher</title>
+    <link rel="stylesheet" href="node_modules/leaflet/dist/leaflet.css">
+    <link rel="stylesheet" href="node_modules/@webdatarocks/webdatarocks/webdatarocks.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -78,6 +80,25 @@
                         Only favorites
                     </label>
                 </div>
+                <div class="filters__group">
+                    <label class="filters__label" for="teacherSort">Sort</label>
+                    <select id="teacherSort" class="filters__select">
+                        <option value="">Default</option>
+                        <option value="full_name">Name</option>
+                        <option value="course">Speciality</option>
+                        <option value="age">Age</option>
+                        <option value="b_date">Date of birth</option>
+                        <option value="gender">Gender</option>
+                        <option value="country">Country</option>
+                    </select>
+                </div>
+                <div class="filters__group">
+                    <label class="filters__label" for="teacherSortOrder">Order</label>
+                    <select id="teacherSortOrder" class="filters__select">
+                        <option value="asc">Ascending</option>
+                        <option value="desc">Descending</option>
+                    </select>
+                </div>
             </form>
 
             <p class="empty-message" id="loadStatus" role="status" aria-live="polite"></p>
@@ -97,29 +118,27 @@
         <!-- Statistics -->
         <section class="section" id="statistics">
             <h2 class="section__title">Statistics</h2>
-            <p class="empty-message" id="statsSummary"></p>
-
-            <div class="table-responsive">
-                <table class="stats-table">
-                    <thead>
-                        <tr>
-                            <th data-sort="full_name" aria-sort="none"><button type="button">Name <span class="sort-arrow"></span></button></th>
-                            <th data-sort="course" aria-sort="none"><button type="button">Speciality <span class="sort-arrow"></span></button></th>
-                            <th data-sort="age" aria-sort="none"><button type="button">Age <span class="sort-arrow"></span></button></th>
-                            <th data-sort="b_day" aria-sort="none"><button type="button">Date of birth <span class="sort-arrow"></span></button></th>
-                            <th data-sort="gender" aria-sort="none"><button type="button">Gender <span class="sort-arrow"></span></button></th>
-                            <th data-sort="country" aria-sort="none"><button type="button">Nationality <span class="sort-arrow"></span></button></th>
-                        </tr>
-                    </thead>
-                    <tbody id="statsTableBody">
-                        <!-- Dynamically populated by script.js -->
-                    </tbody>
-                </table>
+            <div class="statistics-controls">
+                <label for="statisticsView">View</label>
+                <select id="statisticsView" class="filters__select">
+                    <option value="chart">Diagram</option>
+                    <option value="countries">Country report</option>
+                    <option value="flat">All teachers</option>
+                </select>
             </div>
-
-            <nav class="pagination">
-                <!-- Dynamically populated by script.js -->
-            </nav>
+            <div id="chartPanel">
+                <p class="empty-message" id="statsSummary"></p>
+                <h3 class="statistics-heading">Teachers by country</h3>
+                <p class="empty-message" id="chartEmpty">No teachers found.</p>
+                <div class="statistics-chart" id="chartContainer" hidden>
+                    <canvas id="countryChart" role="img" aria-label="Teachers by country"></canvas>
+                </div>
+            </div>
+            <div id="reportPanel" hidden>
+                <p class="empty-message" id="reportSummary"></p>
+                <p class="empty-message" id="reportEmpty">No teachers loaded yet.</p>
+                <div class="teacher-report" id="teacherReport"></div>
+            </div>
         </section>
 
         <hr class="divider">
@@ -284,6 +303,11 @@
         </div>
     </div>
 
+    <script src="node_modules/lodash/lodash.min.js"></script>
+    <script src="node_modules/leaflet/dist/leaflet.js"></script>
+    <script src="node_modules/chart.js/dist/chart.umd.js"></script>
+    <script src="node_modules/dayjs/dayjs.min.js"></script>
+    <script src="node_modules/@webdatarocks/webdatarocks/webdatarocks.js"></script>
     <script type="module" src="script.js"></script>
 </body>
 

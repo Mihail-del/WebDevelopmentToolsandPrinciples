@@ -632,3 +632,42 @@ body {
 }
 
 /*# sourceMappingURL=style.css.map */
+
+/* Teacher location inside the details popup. */
+.teacher-map {
+    clear: both;
+    height: 260px;
+    margin-top: 16px;
+    border-radius: 6px;
+    background: #f5f5f5;
+}
+
+/* Country statistics. */
+.statistics-heading {
+    text-align: center;
+    margin-bottom: 16px;
+    font-size: 17px;
+}
+.statistics-chart {
+    position: relative;
+    height: 420px;
+    max-width: 650px;
+    margin: 0 auto;
+}
+
+/* Alternative statistics views. */
+.statistics-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+.teacher-report {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+}
+[hidden] {
+    display: none !important;
+}
