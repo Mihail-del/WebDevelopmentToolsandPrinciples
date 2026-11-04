@@ -1,7 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&display=swap');
 
 :root {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Playfair Display', serif;
   color: #233842;
   background: #eef3f5;
   font-synthesis: none;
@@ -20,7 +20,7 @@ button:disabled { cursor: wait; opacity: 0.65; }
 a { color: inherit; }
 :focus-visible { outline: 3px solid #357a86; outline-offset: 4px; }
 h1, h2, h3, p { margin: 0; }
-h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+h1, h2, h3 { font-family: inherit; }
 h1 { font-size: clamp(2.6rem, 5vw, 4.5rem); line-height: 1.1; letter-spacing: -0.06em; }
 .app-shell { max-width: 1220px; margin: auto; padding: 44px 36px; }
 .eyebrow { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.18em; }
@@ -85,7 +85,7 @@ h1 { font-size: clamp(2.6rem, 5vw, 4.5rem); line-height: 1.1; letter-spacing: -0
 .today-dot { width: 6px; height: 6px; background: #47776c; border-radius: 50%; }
 .weather-card time { color: #687d86; font-size: 0.75rem; }
 .weather-icon { display: block; width: 100px; height: 100px; margin: 20px auto 12px; }
-.weather-card__temperature { font-family: 'Manrope', sans-serif; font-size: 2.1rem; font-weight: 600; letter-spacing: -0.06em; }
+.weather-card__temperature { font-size: 2.1rem; font-weight: 600; letter-spacing: -0.06em; }
 .weather-card__temperature span { font-size: 1.15rem; color: #819299; font-weight: 400; }
 .weather-card__condition { color: #5a717b; font-size: 0.76rem; margin-top: 6px; min-height: 24px; }
 .weather-card__details { display: grid; gap: 8px; border-top: 1px solid #dfe8e8; margin: 18px 0 0; padding-top: 16px; font-size: 0.7rem; }
