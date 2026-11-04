@@ -1,10 +1,29 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Navigate, Route, Routes } from 'react-router';
 import LoginPage from './pages/LoginPage.jsx';
 import Dashboard from './pages/Dashboard.jsx';
+import ProtectedRoute from './components/ProtectedRoute.jsx';
+import { endSession, hasSession, startSession } from './services/auth.js';
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(hasSession);
+
+  useEffect(() => {
+    function checkSession() { setIsAuthenticated(hasSession()); }
+    window.addEventListener('focus', checkSession);
+    return () => window.removeEventListener('focus', checkSession);
+  }, []);
+
+  function handleLogin() {
+    if (!startSession()) return false;
+    setIsAuthenticated(true);
+    return true;
+  }
+
+  function handleLogout() {
+    endSession();
+    setIsAuthenticated(false);
+  }
 
   return (
     <div className="app-shell">
@@ -16,8 +35,12 @@ export default function App() {
         <Route path="/" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />} />
         <Route path="/login" element={isAuthenticated
           ? <Navigate to="/dashboard" replace />
-          : <LoginPage onLogin={() => setIsAuthenticated(true)} />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+          : <LoginPage onLogin={handleLogin} />} />
+        <Route path="/dashboard" element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <Dashboard onLogout={handleLogout} />
+          </ProtectedRoute>
+        } />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <footer className="site-footer">

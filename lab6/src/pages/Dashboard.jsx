@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import WeatherCard from '../components/WeatherCard.jsx';
 import { fetchForecast, KYIV } from '../services/weather.js';
 
-export default function Dashboard() {
+export default function Dashboard({ onLogout }) {
   const [location] = useState(KYIV);
   const [forecast, setForecast] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,6 +50,7 @@ export default function Dashboard() {
           <h1>Your next five days.</h1>
           <p className="muted">A glance at the sky. A little more certainty.</p>
         </div>
+        <button className="button" onClick={onLogout}>Sign out <span aria-hidden="true">↗</span></button>
       </div>
       <section className="forecast-section" aria-labelledby="forecast-title" aria-busy={isLoading}>
         <div className="forecast-toolbar">

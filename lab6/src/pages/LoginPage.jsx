@@ -25,7 +25,10 @@ export default function LoginPage({ onLogin }) {
       return;
     }
 
-    onLogin();
+    if (!onLogin()) {
+      setErrors({ form: 'Allow cookies in your browser to sign in.' });
+      return;
+    }
     navigate('/dashboard', { replace: true });
   }
 
