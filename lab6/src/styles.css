@@ -68,6 +68,10 @@ h1 { font-size: clamp(2.6rem, 5vw, 4.5rem); line-height: 1.1; letter-spacing: -0
 .dashboard-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 48px; }
 .dashboard-heading h1 { font-size: clamp(2.3rem, 4vw, 3.4rem); margin: 15px 0; }
 .dashboard-heading .muted { font-size: 0.95rem; }
+.location-controls { display: flex; gap: 10px; flex-wrap: wrap; }
+.location-controls .button:disabled { cursor: default; }
+.button--quiet { border-color: transparent; color: #687d86; }
+.location-message { min-height: 42px; padding: 10px 0; color: #687d86; font-size: 0.75rem; }
 .forecast-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding-bottom: 22px; }
 .forecast-toolbar h2 { font-size: 1.2rem; letter-spacing: -0.035em; }
 .forecast-toolbar .muted { font-size: 0.75rem; margin-top: 6px; }

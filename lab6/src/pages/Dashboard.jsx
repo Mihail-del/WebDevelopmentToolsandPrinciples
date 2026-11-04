@@ -1,14 +1,55 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import WeatherCard from '../components/WeatherCard.jsx';
 import { fetchForecast, KYIV } from '../services/weather.js';
 
 export default function Dashboard({ onLogout }) {
-  const [location] = useState(KYIV);
+  const [location, setLocation] = useState(KYIV);
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationMessage, setLocationMessage] = useState('');
+  const locationRequest = useRef(0);
   const [forecast, setForecast] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
   const [updatedAt, setUpdatedAt] = useState(null);
+
+  useEffect(() => () => { locationRequest.current += 1; }, []);
+
+  function showKyiv() {
+    locationRequest.current += 1;
+    setIsLocating(false);
+    setLocationMessage('');
+    setLocation(KYIV);
+  }
+
+  function useMyLocation() {
+    if (!navigator.geolocation) {
+      setLocation(KYIV);
+      setLocationMessage('Geolocation is not supported by this browser. Showing Kyiv instead.');
+      return;
+    }
+
+    const request = ++locationRequest.current;
+    setIsLocating(true);
+    setLocationMessage('Waiting for your location. Allow location access in your browser.');
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        if (request !== locationRequest.current) return;
+        setIsLocating(false);
+        setLocation({ name: 'Your location', latitude: coords.latitude, longitude: coords.longitude });
+        setLocationMessage('Showing the forecast for your current location.');
+      },
+      (error) => {
+        if (request !== locationRequest.current) return;
+        setIsLocating(false);
+        setLocation(KYIV);
+        setLocationMessage(error.code === 1
+          ? 'Location access was denied. Showing Kyiv instead.'
+          : 'We could not determine your location. Showing Kyiv instead.');
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
+    );
+  }
 
   useEffect(() => {
     const controller = new AbortController();
@@ -52,6 +93,11 @@ export default function Dashboard({ onLogout }) {
         </div>
         <button className="button" onClick={onLogout}>Sign out <span aria-hidden="true">↗</span></button>
       </div>
+      <div className="location-controls" aria-label="Forecast location">
+        <button className="button" onClick={useMyLocation} disabled={isLocating}>{isLocating ? 'Finding your location…' : 'Use my location'} <span aria-hidden="true">⌖</span></button>
+        <button className="button button--quiet" onClick={showKyiv} disabled={location === KYIV && !isLocating}>Show Kyiv</button>
+      </div>
+      <p className="location-message" role="status">{locationMessage}</p>
       <section className="forecast-section" aria-labelledby="forecast-title" aria-busy={isLoading}>
         <div className="forecast-toolbar">
           <div>
