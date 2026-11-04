@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, Navigate, Route, Routes } from 'react-router';
 import LoginPage from './pages/LoginPage.jsx';
+import Dashboard from './pages/Dashboard.jsx';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -16,13 +17,7 @@ export default function App() {
         <Route path="/login" element={isAuthenticated
           ? <Navigate to="/dashboard" replace />
           : <LoginPage onLogin={() => setIsAuthenticated(true)} />} />
-        <Route path="/dashboard" element={
-          <main className="dashboard">
-            <p className="eyebrow">YOUR DAILY OUTLOOK</p>
-            <h1>Hello, Mykhailo.</h1>
-            <p className="muted">Your five-day weather forecast is coming next.</p>
-          </main>
-        } />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <footer className="site-footer">
