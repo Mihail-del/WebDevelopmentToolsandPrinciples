@@ -25,7 +25,57 @@ h1 { font-size: clamp(2.6rem, 5vw, 4.5rem); line-height: 1.1; letter-spacing: -0
 .app-shell { max-width: 1220px; margin: auto; padding: 44px 36px; }
 .eyebrow { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.18em; }
 .muted { color: #687d86; }
+.site-header, .site-footer { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+.site-header { padding-bottom: 30px; border-bottom: 1px solid #d4dfe3; }
+.brand { display: flex; align-items: center; gap: 8px; font-size: 1.7rem; text-decoration: none; font-weight: 700; letter-spacing: -0.06em; }
+.brand-dot { color: #b77b32; }
+.header-note { font-size: 0.8rem; color: #687d86; }
+.site-footer { padding-top: 24px; border-top: 1px solid #d4dfe3; font-size: 0.72rem; color: #687d86; }
+.login-layout { display: grid; grid-template-columns: 1.1fr 1fr; min-height: 650px; padding: 60px 0; gap: 60px; align-items: center; }
+.login-story > .eyebrow { margin-bottom: 24px; }
+.story-description { margin-top: 26px; color: #687d86; font-size: 1rem; }
+.sky-art { position: relative; height: 230px; margin-top: 20px; overflow: hidden; }
+.sky-orbit { position: absolute; width: 300px; height: 300px; border: 1px solid #d0dde1; border-radius: 50%; top: 10px; left: 16px; }
+.sky-sun { position: absolute; width: 128px; height: 128px; background: #edbf73; border-radius: 50%; left: 104px; top: 40px; box-shadow: 0 0 0 20px #edbf731a; }
+.sky-cloud { position: absolute; width: 194px; height: 64px; background: #fff; border-radius: 50px; left: 166px; top: 115px; }
+.sky-cloud::before, .sky-cloud::after { content: ''; position: absolute; background: inherit; border-radius: 50%; }
+.sky-cloud::before { width: 87px; height: 87px; left: 27px; top: -40px; }
+.sky-cloud::after { width: 68px; height: 68px; right: 18px; top: -23px; }
+.sky-cloud--back { width: 130px; height: 44px; left: 50px; top: 144px; background: #d8e5e9; }
+.sky-cloud--back::before { width: 60px; height: 60px; top: -26px; left: 16px; }
+.sky-cloud--back::after { width: 48px; height: 48px; top: -15px; }
+.sky-caption { position: absolute; bottom: 8px; left: 48px; color: #687d86; font-size: 0.75rem; }
+.login-panel { padding: 44px; border-radius: 20px; background: #fff; border: 1px solid #e2e9eb; box-shadow: 0 16px 50px #23384205; }
+.small-icon { display: grid; place-items: center; width: 42px; height: 42px; background: #e7f0ef; color: #346c67; border-radius: 12px; font-size: 1.5rem; margin-bottom: 30px; }
+.login-card > .eyebrow { font-size: 0.62rem; }
+.login-card h2 { font-size: 2rem; letter-spacing: -0.05em; margin: 12px 0 6px; }
+.login-card > .muted { font-size: 0.84rem; }
+.login-form { margin-top: 30px; display: grid; gap: 20px; }
+.field-group { display: grid; gap: 8px; }
+.field-group label { font-size: 0.8rem; font-weight: 600; }
+.field-group input { width: 100%; min-height: 48px; padding: 12px 14px; border: 1px solid #d8e1e5; border-radius: 8px; background: #fbfcfc; color: #233842; font-size: 0.85rem; }
+.field-group input::placeholder { color: #8a9aa1; }
+.field-group input[aria-invalid="true"] { border-color: #b34d41; }
+.field-error, .form-error { color: #a23d33; font-size: 0.78rem; }
+.form-error { background: #fff1ee; border-radius: 8px; padding: 12px; }
+.button { min-height: 44px; padding: 11px 18px; border: 1px solid #cbd9dc; border-radius: 8px; background: transparent; color: #233842; font-size: 0.8rem; font-weight: 600; }
+.button:hover:not(:disabled) { background: #e1ebee; }
+.button--primary { display: flex; justify-content: space-between; align-items: center; background: #2d5955; color: white; border-color: #2d5955; }
+.button--primary:hover:not(:disabled) { background: #214743; }
+.demo-hint { display: grid; gap: 5px; border-top: 1px solid #e4ebed; margin-top: 26px; padding-top: 18px; font-size: 0.7rem; color: #687d86; }
+.demo-hint strong { color: #405b64; font-weight: 500; }
+.dashboard { min-height: 650px; padding: 50px 0; }
+
+@media (max-width: 900px) {
+  .login-layout { gap: 30px; }
+  .login-panel { padding: 30px; }
+}
 
 @media (max-width: 600px) {
   .app-shell { padding: 24px 20px; }
+  .header-note { display: none; }
+  .login-layout { grid-template-columns: 1fr; padding: 36px 0; gap: 30px; }
+  .sky-art { display: none; }
+  .login-panel { padding: 26px; }
+  .site-footer { align-items: flex-start; flex-direction: column; gap: 6px; }
 }
