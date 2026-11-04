@@ -41,8 +41,6 @@ export default function LoginPage({ onLogin }) {
   return (
     <main className="login-layout">
       <section className="login-story" aria-labelledby="welcome-title">
-        <p className="eyebrow">WHATEVER THE WEATHER</p>
-        <h1 id="welcome-title">Make room<br />for a good day.</h1>
         <p className="story-description">A simple look at the next five days.<br />So you can get on with yours.</p>
         <div className="sky-art" aria-hidden="true">
           <div className="sky-orbit" />
@@ -55,9 +53,7 @@ export default function LoginPage({ onLogin }) {
       <section className="login-panel" aria-labelledby="login-title">
         <div className="login-card">
           <span className="small-icon" aria-hidden="true">↗</span>
-          <p className="eyebrow muted">YOUR FORECAST STARTS HERE</p>
           <h2 id="login-title">Welcome back.</h2>
-          <p className="muted">Sign in to see what the sky has in store.</p>
           <form className="login-form" onSubmit={handleSubmit} noValidate>
             <div className="field-group">
               <label htmlFor="login">Login</label>

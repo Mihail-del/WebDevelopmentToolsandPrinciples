@@ -1,7 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&display=swap');
-
 :root {
-  font-family: 'Playfair Display', serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: #233842;
   background: #eef3f5;
   font-synthesis: none;

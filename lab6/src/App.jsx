@@ -29,7 +29,6 @@ export default function App() {
     <div className="app-shell">
       <header className="site-header">
         <Link className="brand" to="/">☀ <span>weather<span className="brand-dot">.</span></span></Link>
-        <span className="header-note">A little forecast. A clearer day.</span>
       </header>
       <Routes>
         <Route path="/" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />} />
@@ -44,8 +43,7 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <footer className="site-footer">
-        <span>Made for everyday plans.</span>
-        <span>Mykhailo Pulov · Lab 06 / React</span>
+        <span>Mykhailo Pulov | Lab 06 / React</span>
       </footer>
     </div>
   );
