@@ -12,7 +12,7 @@ export default function Layout() {
     if (location.hash === '#about') document.getElementById('about')?.scrollIntoView();
     else content.current?.scrollTo({ top: 0 });
     document.title = 'Сувенірна крамниця';
-  }, [location]);
+  }, [location.pathname, location.hash]);
 
   return (
     <div className="site-shell">

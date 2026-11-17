@@ -41,3 +41,32 @@ export function updateCatalogParams(previous, changes) {
   }
   return next;
 }
+
+export const SORT_OPTIONS = {
+  recommended: 'За рекомендацією',
+  'price-asc': 'Спочатку дешевші',
+  'price-desc': 'Спочатку дорожчі',
+  'name-asc': 'За назвою: А–Я',
+  'name-desc': 'За назвою: Я–А',
+};
+
+function normalizeSearch(value) {
+  return value.normalize('NFKC').toLocaleLowerCase('uk').replaceAll('’', "'").replaceAll('ʼ', "'").trim().replace(/\s+/g, ' ');
+}
+
+export function searchProducts(products, query) {
+  const text = normalizeSearch(query);
+  return products.filter((product) => normalizeSearch(product.name).includes(text));
+}
+
+export function sortProducts(products, sort) {
+  const collator = new Intl.Collator('uk', { sensitivity: 'base', numeric: true });
+  const compare = {
+    recommended: (a, b) => Number(b.featured) - Number(a.featured),
+    'price-asc': (a, b) => a.price - b.price,
+    'price-desc': (a, b) => b.price - a.price,
+    'name-asc': (a, b) => collator.compare(a.name, b.name),
+    'name-desc': (a, b) => collator.compare(b.name, a.name),
+  }[sort] ?? (() => 0);
+  return [...products].sort(compare);
+}
