@@ -1,0 +1,55 @@
+@use '../styles/variables' as *;
+
+.catalog-banner { background: linear-gradient(90deg, #eddfcded, #eddfcdb3 45%, #eddfcd00), url('/images/banners/hero.webp') center 58% / cover; padding: 25px 0; }
+.catalog-banner p { font-family: $serif; font-size: 24px; }
+.catalog-banner span { font-size: 11px; color: #655342; }
+.catalog-container { padding-bottom: 48px; }
+.breadcrumbs { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 11px; color: $muted; padding-top: 25px; }
+.breadcrumbs a:hover { color: $accent; }
+.catalog-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin: 28px 0 32px; }
+.catalog-heading .eyebrow { margin-bottom: 10px; }
+.catalog-heading h1 { font-size: clamp(2.4rem, 4vw, 3.5rem); }
+.catalog-heading > p { font-size: 12px; color: $muted; }
+.catalog-layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 40px; align-items: start; }
+.catalog-sidebar { position: sticky; top: 20px; }
+.catalog-filters fieldset { padding: 0 0 22px; margin: 0 0 22px; border: 0; border-bottom: 1px solid $line; min-width: 0; }
+.catalog-filters legend { font-family: $serif; font-size: 22px; margin-bottom: 13px; }
+.filter-option { display: flex; align-items: center; gap: 10px; min-height: 34px; cursor: pointer; font-size: 13px; }
+.filter-option input { margin: 0; width: 17px; height: 17px; accent-color: $accent; }
+.filter-option small { margin-left: auto; color: $muted; font-size: 10px; }
+.price-filter__inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.price-filter label { min-width: 0; font-size: 11px; color: $muted; }
+.price-filter input { width: 100%; min-width: 0; padding: 9px; border: 1px solid $line; background: transparent; color: $ink; border-radius: 3px; margin-top: 5px; }
+.price-filter .button { font-size: 11px; padding: 9px; width: 100%; min-height: 38px; margin-top: 14px; }
+.price-filter button:disabled { opacity: .5; }
+.filter-error { font-size: 11px; color: #992f22; margin-top: 9px; }
+.filter-reset { background: none; border: none; padding: 5px 0; color: $accent; text-decoration: underline; text-underline-offset: 4px; font-size: 12px; }
+.catalog-result-count { color: $muted; font-size: 12px; margin-bottom: 22px; }
+.catalog-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px 24px; }
+.catalog-empty { padding: 50px 24px; border: 1px solid $line; text-align: center; }
+.catalog-empty h2 { font-size: 30px; }
+.catalog-empty p { color: $muted; font-size: 13px; margin: 16px auto 24px; max-width: 42ch; }
+.catalog-empty .button { font-size: 12px; }
+.catalog-filter-toggle { display: none; }
+
+@media (max-width: 1000px) {
+ .catalog-layout { grid-template-columns: 180px minmax(0, 1fr); gap: 24px; }
+ .catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 20px; }
+ .catalog-heading > p { display: none; }
+}
+@media (max-width: 760px) {
+ .catalog-banner { padding: 20px 0; }
+ .catalog-banner p { font-size: 21px; max-width: 240px; }
+ .catalog-banner span { font-size: 10px; }
+ .catalog-heading { margin-block: 22px; }
+ .catalog-heading .eyebrow { font-size: 9px; }
+ .catalog-heading h1 { font-size: clamp(2rem, 8vw, 2.7rem); }
+ .catalog-filter-toggle { display: inline-flex; margin-bottom: 22px; min-height: 42px; font-size: 12px; }
+ .catalog-layout { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+ .catalog-sidebar { display: none; position: static; }
+ .catalog-sidebar[data-open='true'] { display: block; }
+ .catalog-filters { border: 1px solid $line; padding: 18px; margin-bottom: 10px; }
+ .catalog-filters legend { font-size: 21px; }
+ .filter-option { min-height: 40px; }
+ .catalog-grid { gap: 26px 16px; }
+}
