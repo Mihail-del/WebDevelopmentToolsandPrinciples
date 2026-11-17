@@ -11,7 +11,7 @@
 .catalog-heading h1 { font-size: clamp(2.4rem, 4vw, 3.5rem); }
 .catalog-heading > p { font-size: 12px; color: $muted; }
 .catalog-layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 40px; align-items: start; }
-.catalog-sidebar { position: sticky; top: 20px; }
+.catalog-sidebar { position: sticky; top: 20px; max-height: calc(100dvh - 210px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding-right: 8px; }
 .catalog-filters fieldset { padding: 0 0 22px; margin: 0 0 22px; border: 0; border-bottom: 1px solid $line; min-width: 0; }
 .catalog-filters legend { font-family: $serif; font-size: 22px; margin-bottom: 13px; }
 .filter-option { display: flex; align-items: center; gap: 10px; min-height: 34px; cursor: pointer; font-size: 13px; }
@@ -30,7 +30,7 @@
 .catalog-empty h2 { font-size: 30px; }
 .catalog-empty p { color: $muted; font-size: 13px; margin: 16px auto 24px; max-width: 42ch; }
 .catalog-empty .button { font-size: 12px; }
-.catalog-filter-toggle { display: none; }
+.catalog-page .catalog-filter-toggle { display: none; }
 
 @media (max-width: 1000px) {
  .catalog-layout { grid-template-columns: 180px minmax(0, 1fr); gap: 24px; }
@@ -44,9 +44,9 @@
  .catalog-heading { margin-block: 22px; }
  .catalog-heading .eyebrow { font-size: 9px; }
  .catalog-heading h1 { font-size: clamp(2rem, 8vw, 2.7rem); }
- .catalog-filter-toggle { display: inline-flex; margin-bottom: 22px; min-height: 42px; font-size: 12px; }
+ .catalog-page .catalog-filter-toggle { display: inline-flex; margin-bottom: 22px; min-height: 42px; font-size: 12px; }
  .catalog-layout { grid-template-columns: minmax(0, 1fr); gap: 20px; }
- .catalog-sidebar { display: none; position: static; }
+ .catalog-sidebar { display: none; position: static; max-height: none; overflow: visible; padding-right: 0; }
  .catalog-sidebar[data-open='true'] { display: block; }
  .catalog-filters { border: 1px solid $line; padding: 18px; margin-bottom: 10px; }
  .catalog-filters legend { font-size: 21px; }

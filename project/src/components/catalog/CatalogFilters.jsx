@@ -8,7 +8,7 @@ function PriceFilter({ min, max, onApply }) {
   const upper = parsePrice(to);
   const invalid = Number.isNaN(lower) || Number.isNaN(upper);
   const reversed = lower !== null && upper !== null && lower > upper;
-  const error = invalid ? 'Вкажіть додатну ціну, не більше двох знаків після коми.' : reversed ? 'Ціна «від» має бути меншою або дорівнювати ціні «до».' : '';
+  const error = invalid ? 'Вкажіть ціну від 0, не більше двох знаків після коми.' : reversed ? 'Ціна «від» має бути меншою або дорівнювати ціні «до».' : '';
 
   return (
     <form className="price-filter" onSubmit={(event) => { event.preventDefault(); if (!error) onApply({ min: lower === null ? null : lower / 100, max: upper === null ? null : upper / 100 }); }}>
