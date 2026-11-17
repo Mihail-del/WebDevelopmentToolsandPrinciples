@@ -1,0 +1,6 @@
+[submodule "lab7"]
+	path = lab7
+	url = https://github.com/Mihail-del/Lab-7.-Performance-audit.git
+[submodule "lab7-before"]
+	path = lab7-before
+	url = https://github.com/Mihail-del/Lab-7.-Performance-audit.git
