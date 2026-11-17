@@ -50,5 +50,343 @@
     ],
     "stock": 8,
     "featured": true
+  },
+  {
+    "id": "lviv-postcard-1",
+    "name": "Листівка «Львів. Ратуша», A6",
+    "description": "Акварельний спогад про львівські вулиці. Щільний папір, місце для кількох теплих слів на звороті. Варіант: Листівка «Львів. Ратуша», A6.",
+    "city": "Львів",
+    "category": "postcards",
+    "price": 4500,
+    "images": [
+      "/images/products/lviv-postcard/main.webp"
+    ],
+    "stock": 6,
+    "featured": false
+  },
+  {
+    "id": "lviv-postcard-2",
+    "name": "Листівки «Львів. Ратуша», набір 3 шт.",
+    "description": "Акварельний спогад про львівські вулиці. Щільний папір, місце для кількох теплих слів на звороті. Варіант: Листівки «Львів. Ратуша», набір 3 шт..",
+    "city": "Львів",
+    "category": "postcards",
+    "price": 9500,
+    "images": [
+      "/images/products/lviv-postcard/main.webp"
+    ],
+    "stock": 7,
+    "featured": false
+  },
+  {
+    "id": "lviv-postcard-3",
+    "name": "Листівки «Львів. Ратуша», набір 5 шт.",
+    "description": "Акварельний спогад про львівські вулиці. Щільний папір, місце для кількох теплих слів на звороті. Варіант: Листівки «Львів. Ратуша», набір 5 шт..",
+    "city": "Львів",
+    "category": "postcards",
+    "price": 15000,
+    "images": [
+      "/images/products/lviv-postcard/main.webp"
+    ],
+    "stock": 8,
+    "featured": false
+  },
+  {
+    "id": "lviv-postcard-4",
+    "name": "Листівка «Львів. Ратуша», A5",
+    "description": "Акварельний спогад про львівські вулиці. Щільний папір, місце для кількох теплих слів на звороті. Варіант: Листівка «Львів. Ратуша», A5.",
+    "city": "Львів",
+    "category": "postcards",
+    "price": 6500,
+    "images": [
+      "/images/products/lviv-postcard/main.webp"
+    ],
+    "stock": 9,
+    "featured": false
+  },
+  {
+    "id": "lviv-postcard-5",
+    "name": "Листівки «Львів. Ратуша», набір 10 шт.",
+    "description": "Акварельний спогад про львівські вулиці. Щільний папір, місце для кількох теплих слів на звороті. Варіант: Листівки «Львів. Ратуша», набір 10 шт..",
+    "city": "Львів",
+    "category": "postcards",
+    "price": 28000,
+    "images": [
+      "/images/products/lviv-postcard/main.webp"
+    ],
+    "stock": 10,
+    "featured": false
+  },
+  {
+    "id": "lviv-postcard-6",
+    "name": "Листівка «Львів. Ратуша» з конвертом",
+    "description": "Акварельний спогад про львівські вулиці. Щільний папір, місце для кількох теплих слів на звороті. Варіант: Листівка «Львів. Ратуша» з конвертом.",
+    "city": "Львів",
+    "category": "postcards",
+    "price": 5500,
+    "images": [
+      "/images/products/lviv-postcard/main.webp"
+    ],
+    "stock": 11,
+    "featured": false
+  },
+  {
+    "id": "lviv-postcard-7",
+    "name": "Листівки «Львів. Ратуша», подарунковий набір",
+    "description": "Акварельний спогад про львівські вулиці. Щільний папір, місце для кількох теплих слів на звороті. Варіант: Листівки «Львів. Ратуша», подарунковий набір.",
+    "city": "Львів",
+    "category": "postcards",
+    "price": 19000,
+    "images": [
+      "/images/products/lviv-postcard/main.webp"
+    ],
+    "stock": 12,
+    "featured": false
+  },
+  {
+    "id": "kyiv-mug-1",
+    "name": "Чашка «Київські пагорби», 250 мл",
+    "description": "Керамічна чашка з малюнком київських краєвидів для повільних ранків удома. Варіант: Чашка «Київські пагорби», 250 мл.",
+    "city": "Київ",
+    "category": "mugs",
+    "price": 39000,
+    "images": [
+      "/images/products/kyiv-mug/main.webp"
+    ],
+    "stock": 6,
+    "featured": false
+  },
+  {
+    "id": "kyiv-mug-2",
+    "name": "Чашка «Київські пагорби», 350 мл",
+    "description": "Керамічна чашка з малюнком київських краєвидів для повільних ранків удома. Варіант: Чашка «Київські пагорби», 350 мл.",
+    "city": "Київ",
+    "category": "mugs",
+    "price": 52000,
+    "images": [
+      "/images/products/kyiv-mug/main.webp"
+    ],
+    "stock": 7,
+    "featured": false
+  },
+  {
+    "id": "kyiv-mug-3",
+    "name": "Чашка «Київські пагорби», 450 мл",
+    "description": "Керамічна чашка з малюнком київських краєвидів для повільних ранків удома. Варіант: Чашка «Київські пагорби», 450 мл.",
+    "city": "Київ",
+    "category": "mugs",
+    "price": 59000,
+    "images": [
+      "/images/products/kyiv-mug/main.webp"
+    ],
+    "stock": 8,
+    "featured": false
+  },
+  {
+    "id": "kyiv-mug-4",
+    "name": "Чашки «Київські пагорби», пара",
+    "description": "Керамічна чашка з малюнком київських краєвидів для повільних ранків удома. Варіант: Чашки «Київські пагорби», пара.",
+    "city": "Київ",
+    "category": "mugs",
+    "price": 90000,
+    "images": [
+      "/images/products/kyiv-mug/main.webp"
+    ],
+    "stock": 9,
+    "featured": false
+  },
+  {
+    "id": "kyiv-mug-5",
+    "name": "Чашка «Київські пагорби» у коробці",
+    "description": "Керамічна чашка з малюнком київських краєвидів для повільних ранків удома. Варіант: Чашка «Київські пагорби» у коробці.",
+    "city": "Київ",
+    "category": "mugs",
+    "price": 56000,
+    "images": [
+      "/images/products/kyiv-mug/main.webp"
+    ],
+    "stock": 10,
+    "featured": false
+  },
+  {
+    "id": "kyiv-mug-6",
+    "name": "Чашка «Київські пагорби», 300 мл",
+    "description": "Керамічна чашка з малюнком київських краєвидів для повільних ранків удома. Варіант: Чашка «Київські пагорби», 300 мл.",
+    "city": "Київ",
+    "category": "mugs",
+    "price": 45000,
+    "images": [
+      "/images/products/kyiv-mug/main.webp"
+    ],
+    "stock": 11,
+    "featured": false
+  },
+  {
+    "id": "kyiv-mug-7",
+    "name": "Чашки «Київські пагорби», набір 4 шт.",
+    "description": "Керамічна чашка з малюнком київських краєвидів для повільних ранків удома. Варіант: Чашки «Київські пагорби», набір 4 шт..",
+    "city": "Київ",
+    "category": "mugs",
+    "price": 175000,
+    "images": [
+      "/images/products/kyiv-mug/main.webp"
+    ],
+    "stock": 12,
+    "featured": false
+  },
+  {
+    "id": "lutsk-pin-1",
+    "name": "Значок «Луцький замок», малий",
+    "description": "Маленький дерев’яний замок, який можна взяти з собою на рюкзаку або улюбленій куртці. Варіант: Значок «Луцький замок», малий.",
+    "city": "Луцьк",
+    "category": "pins",
+    "price": 9000,
+    "images": [
+      "/images/products/lutsk-pin/main.webp"
+    ],
+    "stock": 6,
+    "featured": false
+  },
+  {
+    "id": "lutsk-pin-2",
+    "name": "Значок «Луцький замок», великий",
+    "description": "Маленький дерев’яний замок, який можна взяти з собою на рюкзаку або улюбленій куртці. Варіант: Значок «Луцький замок», великий.",
+    "city": "Луцьк",
+    "category": "pins",
+    "price": 16000,
+    "images": [
+      "/images/products/lutsk-pin/main.webp"
+    ],
+    "stock": 7,
+    "featured": false
+  },
+  {
+    "id": "lutsk-pin-3",
+    "name": "Значки «Луцький замок», пара",
+    "description": "Маленький дерев’яний замок, який можна взяти з собою на рюкзаку або улюбленій куртці. Варіант: Значки «Луцький замок», пара.",
+    "city": "Луцьк",
+    "category": "pins",
+    "price": 22000,
+    "images": [
+      "/images/products/lutsk-pin/main.webp"
+    ],
+    "stock": 8,
+    "featured": false
+  },
+  {
+    "id": "lutsk-pin-4",
+    "name": "Значки «Луцький замок», набір 3 шт.",
+    "description": "Маленький дерев’яний замок, який можна взяти з собою на рюкзаку або улюбленій куртці. Варіант: Значки «Луцький замок», набір 3 шт..",
+    "city": "Луцьк",
+    "category": "pins",
+    "price": 31000,
+    "images": [
+      "/images/products/lutsk-pin/main.webp"
+    ],
+    "stock": 9,
+    "featured": false
+  },
+  {
+    "id": "lutsk-pin-5",
+    "name": "Значок «Луцький замок» у коробці",
+    "description": "Маленький дерев’яний замок, який можна взяти з собою на рюкзаку або улюбленій куртці. Варіант: Значок «Луцький замок» у коробці.",
+    "city": "Луцьк",
+    "category": "pins",
+    "price": 18000,
+    "images": [
+      "/images/products/lutsk-pin/main.webp"
+    ],
+    "stock": 10,
+    "featured": false
+  },
+  {
+    "id": "lutsk-pin-6",
+    "name": "Значки «Луцький замок», набір 5 шт.",
+    "description": "Маленький дерев’яний замок, який можна взяти з собою на рюкзаку або улюбленій куртці. Варіант: Значки «Луцький замок», набір 5 шт..",
+    "city": "Луцьк",
+    "category": "pins",
+    "price": 49000,
+    "images": [
+      "/images/products/lutsk-pin/main.webp"
+    ],
+    "stock": 11,
+    "featured": false
+  },
+  {
+    "id": "odesa-poster-1",
+    "name": "Постер «Одеса. Маяк», A5",
+    "description": "Морський вітер і вечірнє світло в акварельній ілюстрації. Друк для затишного куточка вдома. Варіант: Постер «Одеса. Маяк», A5.",
+    "city": "Одеса",
+    "category": "posters",
+    "price": 18000,
+    "images": [
+      "/images/products/odesa-poster/main.webp"
+    ],
+    "stock": 6,
+    "featured": false
+  },
+  {
+    "id": "odesa-poster-2",
+    "name": "Постер «Одеса. Маяк», A4",
+    "description": "Морський вітер і вечірнє світло в акварельній ілюстрації. Друк для затишного куточка вдома. Варіант: Постер «Одеса. Маяк», A4.",
+    "city": "Одеса",
+    "category": "posters",
+    "price": 29000,
+    "images": [
+      "/images/products/odesa-poster/main.webp"
+    ],
+    "stock": 7,
+    "featured": false
+  },
+  {
+    "id": "odesa-poster-3",
+    "name": "Постер «Одеса. Маяк», A3",
+    "description": "Морський вітер і вечірнє світло в акварельній ілюстрації. Друк для затишного куточка вдома. Варіант: Постер «Одеса. Маяк», A3.",
+    "city": "Одеса",
+    "category": "posters",
+    "price": 42000,
+    "images": [
+      "/images/products/odesa-poster/main.webp"
+    ],
+    "stock": 8,
+    "featured": false
+  },
+  {
+    "id": "odesa-poster-4",
+    "name": "Постер «Одеса. Маяк», A2",
+    "description": "Морський вітер і вечірнє світло в акварельній ілюстрації. Друк для затишного куточка вдома. Варіант: Постер «Одеса. Маяк», A2.",
+    "city": "Одеса",
+    "category": "posters",
+    "price": 65000,
+    "images": [
+      "/images/products/odesa-poster/main.webp"
+    ],
+    "stock": 9,
+    "featured": false
+  },
+  {
+    "id": "odesa-poster-5",
+    "name": "Постер «Одеса. Маяк» у рамці, A4",
+    "description": "Морський вітер і вечірнє світло в акварельній ілюстрації. Друк для затишного куточка вдома. Варіант: Постер «Одеса. Маяк» у рамці, A4.",
+    "city": "Одеса",
+    "category": "posters",
+    "price": 59000,
+    "images": [
+      "/images/products/odesa-poster/main.webp"
+    ],
+    "stock": 10,
+    "featured": false
+  },
+  {
+    "id": "odesa-poster-6",
+    "name": "Постери «Одеса. Маяк», набір 2 шт.",
+    "description": "Морський вітер і вечірнє світло в акварельній ілюстрації. Друк для затишного куточка вдома. Варіант: Постери «Одеса. Маяк», набір 2 шт..",
+    "city": "Одеса",
+    "category": "posters",
+    "price": 65000,
+    "images": [
+      "/images/products/odesa-poster/main.webp"
+    ],
+    "stock": 11,
+    "featured": false
   }
 ]
