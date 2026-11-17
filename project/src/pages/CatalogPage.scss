@@ -73,3 +73,16 @@
  .catalog-sort > span { display: block; font-size: 11px; color: $muted; }
  .catalog-sort select { max-width: 75%; }
 }
+
+.catalog-result-range { color: $muted; font-size: 11px; padding: 4px 0; }
+.catalog-pagination-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-top: 25px; margin-top: 30px; border-top: 1px solid $line; }
+.pagination { display: flex; flex-wrap: wrap; gap: 6px; }
+.pagination a, .pagination > span { display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 36px; padding: 6px; border: 1px solid $line; border-radius: 3px; font-size: 13px; }
+.pagination a:hover { border-color: $accent; color: $accent; }
+.pagination a[aria-current='page'] { background: $accent; color: white; border-color: $accent; }
+.pagination > span { opacity: .35; }
+@media (max-width: 760px) {
+ .catalog-pagination-row { align-items: flex-start; flex-direction: column; gap: 12px; }
+ .pagination { gap: 5px; }
+ .pagination a, .pagination > span { min-width: 36px; height: 40px; }
+}

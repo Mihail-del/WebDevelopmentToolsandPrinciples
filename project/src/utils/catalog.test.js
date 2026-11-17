@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { filterProducts, parsePrice, readCatalogFilters, searchProducts, sortProducts, updateCatalogParams } from './catalog.js';
+import { filterProducts, paginateProducts, parsePrice, readCatalogFilters, searchProducts, sortProducts, updateCatalogParams } from './catalog.js';
 
 const products = [
   { id: 'one', name: 'Чашка «Київ»', city: 'Київ', category: 'mugs', price: 48000, featured: true },
@@ -53,4 +53,20 @@ test('changing filters preserves other parameters and resets page', () => {
   assert.equal(next.has('page'), false);
   assert.deepEqual(next.getAll('city'), ['Львів', 'Київ']);
   assert.equal(previous.get('page'), '3');
+});
+
+test('pagination limits each page to nine and clamps pasted page numbers', () => {
+  const many = Array.from({ length: 30 }, (_, id) => ({ id }));
+  assert.equal(paginateProducts(many, '1').items.length, 9);
+  assert.deepEqual(paginateProducts(many, '4').items.map((item) => item.id), [27, 28, 29]);
+  assert.equal(paginateProducts(many, '999').page, 4);
+  for (const value of [null, '0', '-1', '2.5', 'oops', '1e2', '9007199254740992']) assert.equal(paginateProducts(many, value).page, 1);
+  assert.deepEqual(paginateProducts([], '5'), { page: 1, pageCount: 1, items: [], start: 0 });
+});
+
+test('filter and sort happen before slicing a page', () => {
+  const many = Array.from({ length: 30 }, (_, id) => ({ id, name: 'Чашка', city: id % 2 ? 'Київ' : 'Львів', category: 'mugs', price: id * 100, featured: false }));
+  const filters = readCatalogFilters(new URLSearchParams('city=Київ'), many);
+  const sorted = sortProducts(searchProducts(filterProducts(many, filters), 'чашка'), 'price-desc');
+  assert.deepEqual(paginateProducts(sorted, '2').items.map((item) => item.id), [11, 9, 7, 5, 3, 1]);
 });

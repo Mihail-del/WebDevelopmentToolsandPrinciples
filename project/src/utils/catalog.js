@@ -70,3 +70,13 @@ export function sortProducts(products, sort) {
   }[sort] ?? (() => 0);
   return [...products].sort(compare);
 }
+
+export const PAGE_SIZE = 9;
+
+export function paginateProducts(products, rawPage) {
+  const requested = /^[1-9]\d*$/.test(rawPage ?? '') && Number.isSafeInteger(Number(rawPage)) ? Number(rawPage) : 1;
+  const pageCount = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
+  const page = Math.min(requested, pageCount);
+  const start = (page - 1) * PAGE_SIZE;
+  return { page, pageCount, items: products.slice(start, start + PAGE_SIZE), start };
+}
