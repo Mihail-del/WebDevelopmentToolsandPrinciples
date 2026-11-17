@@ -1,0 +1,30 @@
+@use '../../styles/variables' as *;
+
+.site-shell { display: flex; flex-direction: column; height: 100dvh; min-height: 0; }
+.site-content { flex: 1; min-height: 0; overflow: auto; scrollbar-gutter: stable; }
+.site-header { flex-shrink: 0; z-index: 20; border-bottom: 1px solid $line; background: $paper; }
+.header-inner { min-height: 88px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.brand { display: inline-flex; align-items: center; gap: 12px; white-space: nowrap; }
+.brand svg { width: 65px; height: 43px; color: $accent; }
+.brand span { font-family: $serif; font-size: 23px; letter-spacing: -.7px; }
+.main-nav { display: flex; align-items: center; margin-left: auto; }
+.main-nav > a, .catalog-nav { padding: 0 21px; border-left: 1px solid $line; font-size: 13px; }
+.main-nav a:hover, .main-nav a.active { color: $accent; }
+.catalog-nav { position: relative; }
+.catalog-nav__trigger { display: flex; align-items: center; gap: 4px; }
+.submenu-toggle { display: inline-flex; padding: 10px 3px; background: none; border: none; color: $muted; }
+.submenu-toggle[aria-expanded='true'] svg { transform: rotate(180deg); }
+.submenu { position: absolute; top: calc(100% + 10px); left: 10px; min-width: 200px; padding: 10px; border: 1px solid $line; background: $paper; box-shadow: 0 12px 25px #28231e12; border-radius: 3px; }
+.submenu a { display: block; padding: 10px 12px; }
+.submenu a:hover { background: $paper-dark; }
+.header-actions { display: flex; align-items: center; gap: 2px; border-left: 1px solid $line; padding-left: 16px; }
+.mobile-menu-toggle { display: none; }
+.site-footer { flex-shrink: 0; border-top: 1px solid $line; background: $paper; }
+.footer-inner { min-height: 72px; display: flex; align-items: center; gap: 32px; }
+.brand--compact svg { width: 43px; height: 32px; }
+.brand--compact span { font-size: 17px; letter-spacing: -.4px; }
+.footer-inner > p { color: $muted; font-size: 11px; margin-right: auto; }
+.footer-inner .text-link { font-size: 12px; }
+.demo-note { font-size: 10px; color: $muted; border-left: 1px solid $line; padding-left: 24px; }
+.skip-link { position: fixed; top: -100px; left: 20px; z-index: 100; padding: 12px 20px; background: $ink; color: white; }
+.skip-link:focus { top: 10px; }
