@@ -18,7 +18,7 @@
 .submenu a { display: block; padding: 10px 12px; }
 .submenu a:hover { background: $paper-dark; }
 .header-actions { display: flex; align-items: center; gap: 2px; border-left: 1px solid $line; padding-left: 16px; }
-.mobile-menu-toggle { display: none; }
+.header-actions .mobile-menu-toggle { display: none; }
 .site-footer { flex-shrink: 0; border-top: 1px solid $line; background: $paper; }
 .footer-inner { min-height: 72px; display: flex; align-items: center; gap: 32px; }
 .brand--compact svg { width: 43px; height: 32px; }
