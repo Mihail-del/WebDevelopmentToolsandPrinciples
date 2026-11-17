@@ -1,0 +1,26 @@
+{
+  "tool": "built-in image_gen",
+  "note": "Generated illustrations of fictional products; converted to WebP without cropping.",
+  "assets": [
+    {
+      "file": "public/images/banners/hero.webp",
+      "prompt": "Wide editorial still life for hero background of Ukrainian souvenir boutique website. Composition right-heavy: ivory handmade ceramic mug with subtle blue Kyiv skyline, Lviv postcard, wooden Lutsk castle enamel pin, framed Odesa lighthouse art print, sprigs of dried white flowers, linen towel with subtle red Ukrainian embroidery. Warm ivory plaster background, natural sunlight, empty left 45 percent for HTML typography, no text overlays, no UI, no watermark. Landscape 3:2."
+    },
+    {
+      "file": "public/images/products/lviv-postcard/main.webp",
+      "prompt": "Single product photograph: small stack of off-white postcards with detailed watercolor illustration of Lviv historic town hall, handwritten small Львів label. On linen and warm wood, dried white flowers edge, soft natural light, warm cream editorial ecommerce aesthetic. Square composition focused on postcard, no UI, no watermark."
+    },
+    {
+      "file": "public/images/products/kyiv-mug/main.webp",
+      "prompt": "Single product photograph: handmade ivory ceramic mug with delicate dark blue line art Kyiv skyline and small handwritten Київ inscription, on ivory linen with tiny red embroidered edge, warm wood behind, soft natural sunlight, warm cream editorial ecommerce aesthetic. Square composition, no UI, no watermark."
+    },
+    {
+      "file": "public/images/products/lutsk-pin/main.webp",
+      "prompt": "Single product photograph: beautiful small wooden enamel souvenir pin depicting Lutsk medieval castle in ochre, subtle small Луцьк label, lying on textured beige linen with a tiny sprig of dried lavender. Warm natural sunlight, warm cream editorial ecommerce aesthetic. Square closeup, no UI, no watermark."
+    },
+    {
+      "file": "public/images/products/odesa-poster/main.webp",
+      "prompt": "Single product photograph: framed watercolor Odesa lighthouse art print, pale blue sea and warm sunset, in thin oak frame leaned against cream plaster wall beside green plant, warm natural sunlight, warm cream editorial ecommerce aesthetic. Square composition, no UI, no watermark."
+    }
+  ]
+}

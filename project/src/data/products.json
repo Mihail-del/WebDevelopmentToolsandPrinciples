@@ -1,0 +1,54 @@
+[
+  {
+    "id": "lviv-postcard",
+    "name": "Листівка «Львів. Ратуша»",
+    "description": "Акварельний спогад про львівські вулиці. Щільний папір, місце для кількох теплих слів на звороті.",
+    "city": "Львів",
+    "category": "postcards",
+    "price": 3500,
+    "images": [
+      "/images/products/lviv-postcard/main.webp"
+    ],
+    "stock": 30,
+    "featured": true
+  },
+  {
+    "id": "kyiv-mug",
+    "name": "Чашка «Київські пагорби»",
+    "description": "Керамічна чашка з малюнком київських краєвидів для повільних ранків удома.",
+    "city": "Київ",
+    "category": "mugs",
+    "price": 48000,
+    "images": [
+      "/images/products/kyiv-mug/main.webp"
+    ],
+    "stock": 12,
+    "featured": true
+  },
+  {
+    "id": "lutsk-pin",
+    "name": "Значок «Луцький замок»",
+    "description": "Маленький дерев’яний замок, який можна взяти з собою на рюкзаку або улюбленій куртці.",
+    "city": "Луцьк",
+    "category": "pins",
+    "price": 12000,
+    "images": [
+      "/images/products/lutsk-pin/main.webp"
+    ],
+    "stock": 20,
+    "featured": true
+  },
+  {
+    "id": "odesa-poster",
+    "name": "Постер «Одеса. Маяк»",
+    "description": "Морський вітер і вечірнє світло в акварельній ілюстрації. Друк для затишного куточка вдома.",
+    "city": "Одеса",
+    "category": "posters",
+    "price": 35000,
+    "images": [
+      "/images/products/odesa-poster/main.webp"
+    ],
+    "stock": 8,
+    "featured": true
+  }
+]
