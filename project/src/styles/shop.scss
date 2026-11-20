@@ -69,3 +69,20 @@
 @media (max-width: 760px) {
   .shop-columns { grid-template-columns: minmax(0, 1fr); }
 }
+
+.checkout-form, .checkout-form label { display: grid; gap: 8px; }
+.checkout-form { gap: 18px; max-width: 540px; }
+
+.checkout-form input {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  background: #fffaf4;
+  border: 1px solid $line;
+  border-radius: 4px;
+  color: $ink;
+}
+
+.checkout-form__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+.order-summary { width: min(100%, 540px); }
+.order-items li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 14px; padding-block: 8px; border-bottom: 1px solid $line; }

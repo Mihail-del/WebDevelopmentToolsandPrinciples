@@ -41,6 +41,7 @@ export default function CartPage() {
           <aside className="shop-summary">
             <h2>Разом</h2>
             <strong>{formatPrice(cartTotal)}</strong>
+            <Link className="button" to="/checkout">Оформити замовлення</Link>
             <Link className="text-link" to="/catalog">Продовжити покупки</Link>
           </aside>
         </div>

@@ -73,7 +73,7 @@ export default function ShopProvider({ children }) {
 
   return (
     <ShopContext.Provider value={{
-      cartItems, cartTotal, cartCount, cartFailed: cart.failed, setCartQuantity, addToCart,
+      cartItems, cartTotal, cartCount, cartFailed: cart.failed, setCartQuantity, addToCart, clearCart: () => saveCart([]),
       favoriteIds: favorites.ids, favoritesFailed: favorites.failed, toggleFavorite,
     }}>
       {children}
