@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { ChevronDown, Heart, Menu, Search, ShoppingBag, X } from 'lucide-react';
+import { useShop } from '../../context/useShop.js';
 import Brand from './Brand.jsx';
 
 const categories = [
@@ -8,6 +9,7 @@ const categories = [
 ];
 
 export default function Header() {
+  const { cartCount } = useShop();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const closeMenus = () => { setMobileOpen(false); setCatalogOpen(false); };
@@ -34,7 +36,7 @@ export default function Header() {
         <div className="header-actions">
           <Link className="icon-button header-search" to="/catalog" aria-label="Пошук сувенірів" onClick={closeMenus}><Search size={21} strokeWidth={1.5} /></Link>
           <Link className="icon-button" to="/favorites" aria-label="Обране" onClick={closeMenus}><Heart size={21} strokeWidth={1.5} /></Link>
-          <Link className="icon-button" to="/cart" aria-label="Кошик" onClick={closeMenus}><ShoppingBag size={21} strokeWidth={1.5} /></Link>
+          <Link className="icon-button" to="/cart" aria-label={cartCount ? `Кошик: ${cartCount} шт.` : 'Кошик'} onClick={closeMenus}><ShoppingBag size={21} strokeWidth={1.5} /></Link>
           <button className="icon-button mobile-menu-toggle" aria-label={mobileOpen ? 'Закрити меню' : 'Відкрити меню'} aria-expanded={mobileOpen} aria-controls="main-navigation" onClick={() => { setMobileOpen(!mobileOpen); setCatalogOpen(false); }}>{mobileOpen ? <X size={22} /> : <Menu size={22} />}</button>
         </div>
       </div>

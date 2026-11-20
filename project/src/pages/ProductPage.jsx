@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ChevronRight, MapPin } from 'lucide-react';
+import { ChevronRight, MapPin, ShoppingBag } from 'lucide-react';
+import QuantityPicker from '../components/shop/QuantityPicker.jsx';
+import { useShop } from '../context/useShop.js';
 import products from '../data/products.json';
 import { formatPrice } from '../utils/formatPrice.js';
 import './ProductPage.scss';
@@ -16,6 +19,23 @@ export default function ProductPage() {
         <Link className="button" to="/catalog">До каталогу</Link>
       </section>
     );
+  }
+
+  return <ProductDetails key={product.id} product={product} />;
+}
+
+function ProductDetails({ product }) {
+  const [quantity, setQuantity] = useState(1);
+  const [added, setAdded] = useState(false);
+  const { cartItems, addToCart, cartFailed } = useShop();
+  const inCart = cartItems.find((item) => item.product.id === product.id)?.quantity ?? 0;
+  const available = product.stock - inCart;
+  const selected = Math.min(quantity, available);
+
+  function handleAdd() {
+    addToCart(product, selected);
+    setQuantity(1);
+    setAdded(true);
   }
 
   return (
@@ -39,6 +59,14 @@ export default function ProductPage() {
           <p>{product.description}</p>
           <p className="product-detail__price">{formatPrice(product.price)}</p>
           <p>{product.stock > 0 ? `У наявності: ${product.stock} шт.` : 'Немає в наявності'}</p>
+          {available > 0 && <QuantityPicker value={selected} max={available} onChange={setQuantity} />}
+          <div className="product-detail__actions">
+            <button type="button" className="button" disabled={available === 0} onClick={handleAdd}>
+              <ShoppingBag size={18} />У кошик
+            </button>
+          </div>
+          {inCart > 0 && <Link className="text-link" to="/cart">У кошику: {inCart} шт. · Перейти</Link>}
+          {added && <p role="status">{cartFailed ? 'Додано, але зміни не вдалося зберегти в браузері.' : 'Товар додано в кошик.'}</p>}
         </div>
       </div>
     </section>

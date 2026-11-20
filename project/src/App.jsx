@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 import Layout from './components/layout/Layout.jsx';
 import HomePage from './pages/HomePage.jsx';
+import CartPage from './pages/CartPage.jsx';
 import CatalogPage from './pages/CatalogPage.jsx';
 import ProductPage from './pages/ProductPage.jsx';
 import PlannedPage from './pages/PlannedPage.jsx';
@@ -13,7 +14,7 @@ export default function App() {
         <Route path="/catalog" element={<CatalogPage />} />
         <Route path="/catalog/:productId" element={<ProductPage />} />
         <Route path="/favorites" element={<PlannedPage title="Обране" />} />
-        <Route path="/cart" element={<PlannedPage title="Кошик" />} />
+        <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<PlannedPage title="Оформлення замовлення" />} />
         <Route path="/order-success/:orderId" element={<PlannedPage title="Замовлення" />} />
         <Route path="/contacts" element={<PlannedPage title="Контакти" />} />
