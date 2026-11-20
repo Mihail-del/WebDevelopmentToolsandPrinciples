@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import Layout from './components/layout/Layout.jsx';
+import ContactsPage from './pages/ContactsPage.jsx';
 import CheckoutPage from './pages/CheckoutPage.jsx';
 import FavoritesPage from './pages/FavoritesPage.jsx';
 import HomePage from './pages/HomePage.jsx';
@@ -20,7 +21,7 @@ export default function App() {
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/order-success/:orderId" element={<OrderSuccessPage />} />
-        <Route path="/contacts" element={<PlannedPage title="Контакти" />} />
+        <Route path="/contacts" element={<ContactsPage />} />
         <Route path="*" element={<PlannedPage title="Сторінку не знайдено" notFound />} />
       </Route>
     </Routes>

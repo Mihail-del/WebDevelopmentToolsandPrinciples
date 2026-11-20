@@ -1,0 +1,26 @@
+@use '../styles/variables' as *;
+
+.contacts-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: clamp(20px, 4vw, 48px);
+}
+
+.contacts-map {
+  width: 100%;
+  min-width: 0;
+  height: clamp(270px, 45vw, 420px);
+  border: 1px solid $line;
+  border-radius: 4px;
+  background: $paper-dark;
+}
+
+.contacts-faq { margin-top: 40px; max-width: 660px; }
+.contacts-faq h2 { margin-bottom: 16px; }
+.contacts-faq details { border-bottom: 1px solid $line; padding-block: 12px; }
+.contacts-faq summary { cursor: pointer; }
+.contacts-faq details p { margin-top: 8px; }
+
+@media (max-width: 700px) {
+  .contacts-layout { grid-template-columns: minmax(0, 1fr); }
+}
