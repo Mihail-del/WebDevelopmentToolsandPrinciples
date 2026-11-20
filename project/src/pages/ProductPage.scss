@@ -31,3 +31,9 @@
   .product-detail { grid-template-columns: minmax(0, 1fr); }
   .product-detail__photos { max-width: 300px; }
 }
+
+.product-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}

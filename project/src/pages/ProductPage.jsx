@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ChevronRight, MapPin, ShoppingBag } from 'lucide-react';
+import FavoriteButton from '../components/shop/FavoriteButton.jsx';
 import QuantityPicker from '../components/shop/QuantityPicker.jsx';
 import { useShop } from '../context/useShop.js';
 import products from '../data/products.json';
@@ -64,6 +65,7 @@ function ProductDetails({ product }) {
             <button type="button" className="button" disabled={available === 0} onClick={handleAdd}>
               <ShoppingBag size={18} />У кошик
             </button>
+            <FavoriteButton product={product} />
           </div>
           {inCart > 0 && <Link className="text-link" to="/cart">У кошику: {inCart} шт. · Перейти</Link>}
           {added && <p role="status">{cartFailed ? 'Додано, але зміни не вдалося зберегти в браузері.' : 'Товар додано в кошик.'}</p>}

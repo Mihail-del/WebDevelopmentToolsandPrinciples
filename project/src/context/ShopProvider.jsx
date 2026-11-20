@@ -4,6 +4,7 @@ import { readStorage, writeStorage } from '../services/storage.js';
 import { ShopContext } from './useShop.js';
 
 const CART_KEY = 'souvenir-shop:cart:v1';
+const FAVORITES_KEY = 'souvenir-shop:favorites:v1';
 
 function loadCart() {
   const { value, failed } = readStorage(CART_KEY, []);
@@ -20,8 +21,17 @@ function loadCart() {
   return { items, failed: failed || items.length !== value.length };
 }
 
+function loadFavorites() {
+  const { value, failed } = readStorage(FAVORITES_KEY, []);
+  if (!Array.isArray(value)) return { ids: [], failed: true };
+
+  const ids = [...new Set(value.filter((savedId) => products.some(({ id }) => id === savedId)))];
+  return { ids, failed: failed || ids.length !== value.length };
+}
+
 export default function ShopProvider({ children }) {
   const [cart, setCart] = useState(loadCart);
+  const [favorites, setFavorites] = useState(loadFavorites);
 
   // Get current names and prices from the catalog.
   const cartItems = cart.items.map(({ productId, quantity }) => ({
@@ -54,8 +64,18 @@ export default function ShopProvider({ children }) {
     setCartQuantity(product, current + quantity);
   }
 
+  function toggleFavorite(id) {
+    const ids = favorites.ids.includes(id)
+      ? favorites.ids.filter((favoriteId) => favoriteId !== id)
+      : [...favorites.ids, id];
+    setFavorites({ ids, failed: !writeStorage(FAVORITES_KEY, ids) });
+  }
+
   return (
-    <ShopContext.Provider value={{ cartItems, cartTotal, cartCount, cartFailed: cart.failed, setCartQuantity, addToCart }}>
+    <ShopContext.Provider value={{
+      cartItems, cartTotal, cartCount, cartFailed: cart.failed, setCartQuantity, addToCart,
+      favoriteIds: favorites.ids, favoritesFailed: favorites.failed, toggleFavorite,
+    }}>
       {children}
     </ShopContext.Provider>
   );
