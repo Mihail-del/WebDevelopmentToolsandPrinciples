@@ -17,6 +17,7 @@ h2 { font-size: clamp(1.9rem, 2.6vw, 2.6rem); letter-spacing: -.035em; }
 :focus-visible { outline: 2px solid $accent; outline-offset: 5px; }
 ::selection { background: #e7bd9e; }
 .container { width: min(calc(100% - 96px), $content-width); margin-inline: auto; }
+.shop-page { padding-block: 28px 64px; }
 .eyebrow { font-size: .7rem; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: $accent; }
 .button { display: inline-flex; align-items: center; justify-content: center; gap: 24px; min-height: 48px; padding: 12px 24px; border: 1px solid $accent; background: $accent; color: #fffaf4; border-radius: 3px; font-size: .875rem; transition: background .2s, border-color .2s; }
 .button:hover { background: $accent-dark; border-color: $accent-dark; }

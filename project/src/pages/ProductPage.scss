@@ -1,0 +1,33 @@
+@use '../styles/variables' as *;
+
+.product-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 300px) minmax(0, 580px);
+  gap: clamp(24px, 6vw, 82px);
+  margin-top: 32px;
+}
+
+.product-detail__photos img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 4px;
+  background: $paper-dark;
+}
+
+.product-detail__photos img + img { margin-top: 16px; }
+
+.product-detail__info {
+  display: grid;
+  justify-items: start;
+  align-content: start;
+  gap: 16px;
+}
+
+.product-detail__price { color: $accent-dark; font-size: 1.5rem; }
+
+@media (max-width: 650px) {
+  .product-detail { grid-template-columns: minmax(0, 1fr); }
+  .product-detail__photos { max-width: 300px; }
+}
